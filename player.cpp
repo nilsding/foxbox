@@ -9,7 +9,7 @@ Player::Player(Playlist* playlist, QObject *parent) :
     _ao_driver_id = ao_default_driver_id();
 }
 
-#define BUFFER_SIZE 8
+#define BUFFER_SIZE 2
 
 void Player::play()
 {
@@ -42,16 +42,19 @@ void Player::play()
 
         auto row = song->_mod->get_current_row();
         auto pattern = song->_mod->get_current_pattern();
-        if (_row != row || _pattern != pattern)
+        auto channels = song->_mod->get_current_playing_channels();
+        if (_row != row || _pattern != pattern || _channels != channels)
         {
             emit(
                 rowUpdate(
-                    song->_mod->get_current_row(),
-                    song->_mod->get_current_pattern()
+                    row,
+                    pattern,
+                    channels
                 )
             );
             _row = row;
             _pattern = pattern;
+            _channels = channels;
         }
     }
     emit(playbackPaused());

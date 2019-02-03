@@ -98,9 +98,9 @@ void MainWindow::onSongChange(QString songName)
     slInfo->setFirstLine(songName);
 }
 
-void MainWindow::onRowUpdate(int row, int pattern)
+void MainWindow::onRowUpdate(int row, int pattern, int channels)
 {
-    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2").arg(pattern).arg(row));
+    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2, %3 channels").arg(pattern).arg(row).arg(channels));
 }
 
 void MainWindow::onPlaybackStarted()

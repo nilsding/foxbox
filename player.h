@@ -20,7 +20,7 @@ public:
 
 signals:
     void songChange(QString songName);
-    void rowUpdate(int row, int pattern);
+    void rowUpdate(int row, int pattern, int channels);
     void playbackStarted();
     void playbackPaused();
 
@@ -37,6 +37,7 @@ private:
 
     int _row = 0;
     int _pattern = 0;
+    int _channels = 0;
 };
 
 #endif // PLAYER_H

@@ -38,7 +38,7 @@ signals:
 private slots:
     void on_qaPlayPause_triggered();
     void onSongChange(QString songName);
-    void onRowUpdate(int row, int pattern);
+    void onRowUpdate(int row, int pattern, int channels);
     void onPlaybackStarted();
     void onPlaybackPaused();
 
