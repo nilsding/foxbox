@@ -27,6 +27,8 @@ signals:
 public slots:
     void play();
     void pause();
+    void nextTrack();
+    void previousTrack();
 
 private:
     Playlist* _playlist;

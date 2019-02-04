@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     player->moveToThread(&playbackThread);
     connect(this, &MainWindow::play, player, &Player::play);
     connect(this, &MainWindow::pause, player, &Player::pause);
+    connect(this, &MainWindow::nextTrack, player, &Player::nextTrack);
+    connect(this, &MainWindow::previousTrack, player, &Player::previousTrack);
     connect(player, &Player::songChange, this, &MainWindow::onSongChange);
     connect(player, &Player::rowUpdate, this, &MainWindow::onRowUpdate);
     connect(player, &Player::playbackStarted, this, &MainWindow::onPlaybackStarted);
@@ -91,6 +93,26 @@ void MainWindow::on_qaPlayPause_triggered()
     }
 
     emit(play());
+}
+
+void MainWindow::on_qaNext_triggered()
+{
+    emit(nextTrack());
+
+    if (!player->playing())
+    {
+        emit(play());
+    }
+}
+
+void MainWindow::on_qaPrevious_triggered()
+{
+    emit(previousTrack());
+
+    if (!player->playing())
+    {
+        emit(play());
+    }
 }
 
 void MainWindow::onSongChange(QString songName)

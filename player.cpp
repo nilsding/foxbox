@@ -13,6 +13,7 @@ Player::Player(Playlist* playlist, QObject *parent) :
 
 void Player::play()
 {
+    auto currentIndex = _currentIndex;
     int16_t buf[BUFFER_SIZE * 2] = { 0x00 };
 
     ao_sample_format sample_format;
@@ -24,7 +25,7 @@ void Player::play()
 
     _ao_device = ao_open_live(_ao_driver_id, &sample_format, nullptr);
 
-    auto song = _playlist->at(_currentIndex);
+    auto song = _playlist->at(currentIndex);
     emit(songChange(song->songName()));
 
     _playing = true;
@@ -32,6 +33,14 @@ void Player::play()
     while (_playing)
     {
         QApplication::processEvents();
+        if (currentIndex != _currentIndex)
+        {
+            song->_mod->set_position_order_row(0, 0);
+            song = _playlist->at(_currentIndex);
+            currentIndex = _currentIndex;
+            emit(songChange(song->songName()));
+        }
+
         auto read = song->_mod->read_interleaved_stereo(48000, BUFFER_SIZE, buf);
         if (read == 0)
         {
@@ -39,6 +48,7 @@ void Player::play()
             if (_playlist->rowCount() > _currentIndex + 1)
             {
                 song = _playlist->at(++_currentIndex);
+                currentIndex = _currentIndex;
                 emit(songChange(song->songName()));
                 continue;
             }
@@ -51,13 +61,7 @@ void Player::play()
         auto channels = song->_mod->get_current_playing_channels();
         if (_row != row || _pattern != pattern || _channels != channels)
         {
-            emit(
-                rowUpdate(
-                    row,
-                    pattern,
-                    channels
-                )
-            );
+            emit(rowUpdate(row, pattern, channels));
             _row = row;
             _pattern = pattern;
             _channels = channels;
@@ -73,4 +77,20 @@ void Player::play()
 void Player::pause()
 {
     _playing = false;
+}
+
+void Player::nextTrack()
+{
+    if (_playlist->rowCount() > _currentIndex + 1)
+    {
+        _currentIndex++;
+    }
+}
+
+void Player::previousTrack()
+{
+    if (_currentIndex - 1 >= 0)
+    {
+        _currentIndex--;
+    }
 }
