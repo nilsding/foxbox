@@ -38,7 +38,6 @@ void Player::play()
             _playing = false;
             break;
         }
-        ao_play(_ao_device, (char*)buf, static_cast<uint32_t>(read * 2));
 
         auto row = song->_mod->get_current_row();
         auto pattern = song->_mod->get_current_pattern();
@@ -56,6 +55,8 @@ void Player::play()
             _pattern = pattern;
             _channels = channels;
         }
+
+        ao_play(_ao_device, (char*)buf, static_cast<uint32_t>(read * 2));
     }
     emit(playbackPaused());
 
