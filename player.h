@@ -38,6 +38,8 @@ private:
     int _row = 0;
     int _pattern = 0;
     int _channels = 0;
+
+    int _currentIndex = 0;
 };
 
 #endif // PLAYER_H

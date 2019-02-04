@@ -24,7 +24,7 @@ void Player::play()
 
     _ao_device = ao_open_live(_ao_driver_id, &sample_format, nullptr);
 
-    auto song = _playlist->at(0);
+    auto song = _playlist->at(_currentIndex);
     emit(songChange(song->songName()));
 
     _playing = true;
@@ -35,6 +35,13 @@ void Player::play()
         auto read = song->_mod->read_interleaved_stereo(48000, BUFFER_SIZE, buf);
         if (read == 0)
         {
+            song->_mod->set_position_order_row(0, 0);
+            if (_playlist->rowCount() > _currentIndex + 1)
+            {
+                song = _playlist->at(++_currentIndex);
+                emit(songChange(song->songName()));
+                continue;
+            }
             _playing = false;
             break;
         }
