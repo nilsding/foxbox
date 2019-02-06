@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 
+#include <QCloseEvent>
 #include <QDragEnterEvent>
 #include <QDragMoveEvent>
 #include <QDragLeaveEvent>
@@ -26,6 +27,7 @@ public:
     ~MainWindow();
 
 protected:
+    void closeEvent(QCloseEvent* event);
     void dragEnterEvent(QDragEnterEvent* event);
     void dragMoveEvent(QDragMoveEvent* event);
     void dragLeaveEvent(QDragLeaveEvent* event);

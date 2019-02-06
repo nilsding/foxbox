@@ -37,11 +37,19 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     playbackThread.quit();
-    playbackThread.wait();
 
+    delete player;
     delete playlist;
     delete slInfo;
     delete ui;
+}
+
+void MainWindow::closeEvent(QCloseEvent* event)
+{
+    emit(pause());
+    event->accept();
+
+    playbackThread.wait(500);
 }
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* event)
