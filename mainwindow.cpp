@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     slInfo->setFirstLine("foxbox 0.1.0");
     slInfo->setSecondLine("Ready");
-    ui->toolBar->addWidget(slInfo);
+    ui->toolBar->insertWidget(ui->qaLoop, slInfo);
 
     ui->tableView->setModel(playlist);
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, &MainWindow::pause, player, &Player::pause);
     connect(this, &MainWindow::nextTrack, player, &Player::nextTrack);
     connect(this, &MainWindow::previousTrack, player, &Player::previousTrack);
+    connect(ui->qaLoop, &QAction::triggered, player, &Player::setLoop);
     connect(player, &Player::songChange, this, &MainWindow::onSongChange);
     connect(player, &Player::rowUpdate, this, &MainWindow::onRowUpdate);
     connect(player, &Player::playbackStarted, this, &MainWindow::onPlaybackStarted);

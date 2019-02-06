@@ -71,6 +71,7 @@
    <addaction name="qaPrevious"/>
    <addaction name="qaPlayPause"/>
    <addaction name="qaNext"/>
+   <addaction name="qaLoop"/>
   </widget>
   <action name="qaPlayPause">
    <property name="icon">
@@ -97,6 +98,14 @@
    </property>
    <property name="text">
     <string>Next</string>
+   </property>
+  </action>
+  <action name="qaLoop">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Loop</string>
    </property>
   </action>
  </widget>

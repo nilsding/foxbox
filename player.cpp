@@ -26,6 +26,7 @@ void Player::play()
     _ao_device = ao_open_live(_ao_driver_id, &sample_format, nullptr);
 
     auto song = _playlist->at(currentIndex);
+    song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
     emit(songChange(song->songName()));
 
     _playing = true;
@@ -36,6 +37,7 @@ void Player::play()
         if (currentIndex != _currentIndex)
         {
             song->_mod->set_position_order_row(0, 0);
+            song->_mod->ctl_set("play.at_end", "stop");
             song = _playlist->at(_currentIndex);
             currentIndex = _currentIndex;
             emit(songChange(song->songName()));
@@ -44,11 +46,21 @@ void Player::play()
         auto read = song->_mod->read_interleaved_stereo(48000, BUFFER_SIZE, buf);
         if (read == 0)
         {
+            // when module ctl `play.at_end` is set to continue, at the end of the
+            // song 0 is returned.  however subsequent reads will start playing at
+            // the module's loop point again.  therefore: redo this iteration.
+            if (_loop)
+            {
+                continue;
+            }
+
             song->_mod->set_position_order_row(0, 0);
+            song->_mod->ctl_set("play.at_end", "stop");
             if (_playlist->rowCount() > _currentIndex + 1)
             {
                 song = _playlist->at(++_currentIndex);
                 currentIndex = _currentIndex;
+                song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
                 emit(songChange(song->songName()));
                 continue;
             }
@@ -69,6 +81,7 @@ void Player::play()
 
         ao_play(_ao_device, (char*)buf, static_cast<uint32_t>(read * 2));
     }
+    song->_mod->ctl_set("play.at_end", "stop");
     emit(playbackPaused());
 
     ao_close(_ao_device);
@@ -92,5 +105,15 @@ void Player::previousTrack()
     if (_currentIndex - 1 >= 0)
     {
         _currentIndex--;
+    }
+}
+
+void Player::setLoop(bool loop)
+{
+    _loop = loop;
+    if (_playing)
+    {
+        auto song = _playlist->at(_currentIndex);
+        song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
     }
 }

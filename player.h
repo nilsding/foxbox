@@ -29,10 +29,12 @@ public slots:
     void pause();
     void nextTrack();
     void previousTrack();
+    void setLoop(bool loop);
 
 private:
     Playlist* _playlist;
     bool _playing;
+    bool _loop;
 
     int _ao_driver_id;
     ao_device* _ao_device;
