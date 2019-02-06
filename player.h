@@ -19,8 +19,9 @@ public:
     bool playing() { return _playing; }
 
 signals:
-    void songChange(QString songName);
+    void songChange(QString songName, int channelCount);
     void rowUpdate(int row, int pattern, int channels);
+    void frameUpdate(Song *song);
     void playbackStarted();
     void playbackPaused();
 

@@ -6,10 +6,12 @@
 #include <libopenmpt/libopenmpt.hpp>
 
 class Player;
+class VisWindow;
 
 class Song : public QObject
 {
     friend class Player;
+    friend class VisWindow;
 
     Q_OBJECT
     Q_PROPERTY(QString path     MEMBER _path     READ path)

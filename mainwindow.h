@@ -14,6 +14,8 @@
 #include "playlist.h"
 #include "statuslabel.h"
 
+#include "vis.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -43,7 +45,7 @@ private slots:
     void on_qaPlayPause_triggered();
     void on_qaNext_triggered();
     void on_qaPrevious_triggered();
-    void onSongChange(QString songName);
+    void onSongChange(QString songName, int channelCount);
     void onRowUpdate(int row, int pattern, int channels);
     void onPlaybackStarted();
     void onPlaybackPaused();
@@ -55,6 +57,8 @@ private:
     Playlist* playlist;
     QThread playbackThread;
     Player* player;
+
+    VisWindow* visWindow;
 };
 
 #endif // MAINWINDOW_H

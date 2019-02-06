@@ -9,7 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow),
     slInfo(new StatusLabel),
     playlist(new Playlist),
-    player(new Player(playlist))
+    player(new Player(playlist)),
+    visWindow(new VisWindow)
 {
     setAcceptDrops(true);
     ui->setupUi(this);
@@ -32,10 +33,14 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player, &Player::playbackStarted, this, &MainWindow::onPlaybackStarted);
     connect(player, &Player::playbackPaused, this, &MainWindow::onPlaybackPaused);
     playbackThread.start();
+
+    connect(player, &Player::frameUpdate, visWindow, &VisWindow::onFrameUpdate);
+    visWindow->show();
 }
 
 MainWindow::~MainWindow()
 {
+    visWindow->deleteLater();
     playbackThread.quit();
 
     delete player;
@@ -47,6 +52,7 @@ MainWindow::~MainWindow()
 void MainWindow::closeEvent(QCloseEvent* event)
 {
     emit(pause());
+    visWindow->close();
     event->accept();
 
     playbackThread.wait(500);
@@ -124,9 +130,10 @@ void MainWindow::on_qaPrevious_triggered()
     }
 }
 
-void MainWindow::onSongChange(QString songName)
+void MainWindow::onSongChange(QString songName, int channelCount)
 {
     slInfo->setFirstLine(songName);
+    visWindow->setRows(channelCount);
 }
 
 void MainWindow::onRowUpdate(int row, int pattern, int channels)

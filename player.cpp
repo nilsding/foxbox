@@ -27,20 +27,21 @@ void Player::play()
 
     auto song = _playlist->at(currentIndex);
     song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
-    emit(songChange(song->songName()));
+    emit(songChange(song->songName(), song->_mod->get_num_channels()));
 
     _playing = true;
     emit(playbackStarted());
     while (_playing)
     {
         QApplication::processEvents();
+
         if (currentIndex != _currentIndex)
         {
             song->_mod->set_position_order_row(0, 0);
             song->_mod->ctl_set("play.at_end", "stop");
             song = _playlist->at(_currentIndex);
             currentIndex = _currentIndex;
-            emit(songChange(song->songName()));
+            emit(songChange(song->songName(), song->_mod->get_num_channels()));
         }
 
         auto read = song->_mod->read_interleaved_stereo(48000, BUFFER_SIZE, buf);
@@ -61,12 +62,13 @@ void Player::play()
                 song = _playlist->at(++_currentIndex);
                 currentIndex = _currentIndex;
                 song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
-                emit(songChange(song->songName()));
+                emit(songChange(song->songName(), song->_mod->get_num_channels()));
                 continue;
             }
             _playing = false;
             break;
         }
+        emit(frameUpdate(song));
 
         auto row = song->_mod->get_current_row();
         auto pattern = song->_mod->get_current_pattern();
