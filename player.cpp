@@ -16,6 +16,14 @@ void Player::play()
     auto currentIndex = _currentIndex;
     int16_t buf[BUFFER_SIZE * 2] = { 0x00 };
 
+    auto song = _playlist->at(currentIndex);
+    if (song == nullptr)
+    {
+        return;
+    }
+    song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+    emit(songChange(song->songName()));
+
     ao_sample_format sample_format;
     sample_format.bits = 16;
     sample_format.rate = 24000; // 48000 / 2
@@ -24,10 +32,6 @@ void Player::play()
     sample_format.matrix = nullptr;
 
     _ao_device = ao_open_live(_ao_driver_id, &sample_format, nullptr);
-
-    auto song = _playlist->at(currentIndex);
-    song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
-    emit(songChange(song->songName()));
 
     _playing = true;
     emit(playbackStarted());
