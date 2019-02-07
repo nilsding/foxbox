@@ -20,6 +20,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->tableView->setModel(playlist);
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
+    ui->tableView->horizontalHeader()->setDefaultSectionSize(200);
+    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->tableView->verticalHeader()->setDefaultSectionSize(10);
 
     player->moveToThread(&playbackThread);
     connect(this, &MainWindow::play, player, &Player::play);
