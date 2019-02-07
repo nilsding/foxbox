@@ -101,6 +101,12 @@ void Player::nextTrack()
 {
     if (_playlist->rowCount() > _currentIndex + 1)
     {
+        if (!_playing)
+        {
+            auto song = _playlist->at(_currentIndex);
+            song->_mod->set_position_order_row(0, 0);
+            song->_mod->ctl_set("play.at_end", "stop");
+        }
         _currentIndex++;
     }
 }
@@ -109,6 +115,12 @@ void Player::previousTrack()
 {
     if (_currentIndex - 1 >= 0)
     {
+        if (!_playing)
+        {
+            auto song = _playlist->at(_currentIndex);
+            song->_mod->set_position_order_row(0, 0);
+            song->_mod->ctl_set("play.at_end", "stop");
+        }
         _currentIndex--;
     }
 }
