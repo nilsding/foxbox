@@ -43,6 +43,9 @@ private slots:
     void on_qaPlayPause_triggered();
     void on_qaNext_triggered();
     void on_qaPrevious_triggered();
+    void on_qaLoadPlaylist_triggered();
+    void on_qaSavePlaylist_triggered();
+
     void onSongChange(QString songName);
     void onRowUpdate(int row, int pattern, int channels);
     void onPlaybackStarted();

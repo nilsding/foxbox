@@ -77,6 +77,21 @@ void Playlist::append(QString path)
     endInsertRows();
 }
 
+void Playlist::clear()
+{
+    auto oldRowCount = rowCount();
+    beginRemoveRows(QModelIndex(), 0, oldRowCount);
+    for (int i = 0; i < _songList.count(); i++)
+    {
+        _songList.at(i)->deleteLater();
+    }
+    _songList.clear();
+    endRemoveRows();
+
+    // For some reason this "fixes" the display of the vertical header data...
+    emit(headerDataChanged(Qt::Vertical, 0, oldRowCount));
+}
+
 Song* Playlist::at(int index)
 {
     return _songList.at(index);

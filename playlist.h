@@ -21,6 +21,7 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
     void append(QString path);
+    void clear();
 
     Song* at(int index);
 

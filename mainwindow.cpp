@@ -3,6 +3,10 @@
 
 #include <QIcon>
 #include <QMimeData>
+#include <QFileDialog>
+
+#include "m3uparser.h"
+#include "m3uwriter.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -125,6 +129,93 @@ void MainWindow::on_qaPrevious_triggered()
     {
         emit(play());
     }
+}
+
+void MainWindow::on_qaLoadPlaylist_triggered()
+{
+    QFileDialog qfdOpen(this);
+    qfdOpen.setFileMode(QFileDialog::ExistingFile);
+    qfdOpen.setNameFilter(tr("Playlist files (*.m3u)"));
+    qfdOpen.setWindowTitle(tr("Load playlist"));
+
+    if (!qfdOpen.exec())
+    {
+        return;
+    }
+
+    QStringList files = qfdOpen.selectedFiles();
+
+    // TODO: error handling, perhaps
+    if (!files.count())
+    {
+        return;
+    }
+
+    auto playlistPath = files.first();
+    auto parser = new M3uParser(playlistPath);
+    auto resolvedFiles = parser->parse();
+
+    if (resolvedFiles != nullptr && !resolvedFiles->empty())
+    {
+        player->mutex.lock();
+        bool wasPlaying = player->playing();
+        if (wasPlaying)
+        {
+            player->pause();
+            onPlaybackPaused();
+        }
+
+        playlist->clear();
+        for (auto &item : *resolvedFiles)
+        {
+            playlist->append(item);
+        }
+        player->setCurrentIndex(0);
+
+        if (wasPlaying)
+        {
+            emit(play());
+        }
+        player->mutex.unlock();
+    }
+
+    delete parser;
+}
+
+void MainWindow::on_qaSavePlaylist_triggered()
+{
+    QFileDialog qfdSave(this);
+    qfdSave.setFileMode(QFileDialog::AnyFile);
+    qfdSave.setNameFilter(tr("Playlist files (*.m3u)"));
+    qfdSave.setWindowTitle(tr("Save playlist"));
+    qfdSave.setAcceptMode(QFileDialog::AcceptSave);
+    qfdSave.setConfirmOverwrite(true);
+
+    if (!qfdSave.exec())
+    {
+        return;
+    }
+
+    QStringList files = qfdSave.selectedFiles();
+
+    // TODO: error handling, perhaps
+    if (!files.count())
+    {
+        return;
+    }
+
+    auto playlistPath = files.first();
+    auto writer = new M3uWriter(playlistPath);
+
+    QStringList paths;
+    auto itemCount = playlist->rowCount();
+    for (int i = 0; i < itemCount; i++)
+    {
+        paths << playlist->at(i)->path();
+    }
+    writer->write(&paths);
+
+    delete writer;
 }
 
 void MainWindow::onSongChange(QString songName)

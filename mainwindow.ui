@@ -51,6 +51,14 @@
      <height>22</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="qaLoadPlaylist"/>
+    <addaction name="qaSavePlaylist"/>
+   </widget>
+   <addaction name="menu_File"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -106,6 +114,25 @@
    </property>
    <property name="text">
     <string>Loop</string>
+   </property>
+  </action>
+  <action name="qaLoadPlaylist">
+   <property name="text">
+    <string>&amp;Load Playlist</string>
+   </property>
+   <property name="toolTip">
+    <string>Load Playlist</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+L</string>
+   </property>
+  </action>
+  <action name="qaSavePlaylist">
+   <property name="text">
+    <string>&amp;Save Playlist</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>
