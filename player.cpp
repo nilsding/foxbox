@@ -85,7 +85,7 @@ void Player::play()
             _channels = channels;
         }
 
-        ao_play(_ao_device, (char*)buf, static_cast<uint32_t>(read * 2));
+        ao_play(_ao_device, reinterpret_cast<char*>(buf), static_cast<uint32_t>(read * 2));
     }
     song->_mod->ctl_set("play.at_end", "stop");
     emit(playbackPaused());
