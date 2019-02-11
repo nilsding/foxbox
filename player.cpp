@@ -16,11 +16,12 @@ void Player::play()
     auto currentIndex = _currentIndex;
     int16_t buf[BUFFER_SIZE * 2] = { 0x00 };
 
-    auto song = _playlist->at(currentIndex);
-    if (song == nullptr)
+    if (_playlist->rowCount() == 0)
     {
         return;
     }
+
+    auto song = _playlist->at(currentIndex);
     song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
     emit(songChange(song->songName()));
 
@@ -99,6 +100,11 @@ void Player::pause()
 
 void Player::nextTrack()
 {
+    if (_playlist->rowCount() == 0)
+    {
+        return;
+    }
+
     if (_playlist->rowCount() > _currentIndex + 1)
     {
         if (!_playing)
@@ -113,11 +119,24 @@ void Player::nextTrack()
 
 void Player::previousTrack()
 {
+    if (_playlist->rowCount() == 0)
+    {
+        return;
+    }
+
+    auto song = _playlist->at(_currentIndex);
+
+    // rewind the song if it has been played for longer than 1 second
+    if (_playing && song->_mod->get_position_seconds() > 1.0)
+    {
+        song->_mod->set_position_order_row(0, 0);
+        return;
+    }
+
     if (_currentIndex - 1 >= 0)
     {
         if (!_playing)
         {
-            auto song = _playlist->at(_currentIndex);
             song->_mod->set_position_order_row(0, 0);
             song->_mod->ctl_set("play.at_end", "stop");
         }
