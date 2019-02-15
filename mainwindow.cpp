@@ -92,8 +92,18 @@ void MainWindow::dropEvent(QDropEvent* event)
         if (!pathList.empty())
         {
             event->acceptProposedAction();
+            if (pathList.count() == 1 && pathList.first().endsWith(".m3u", Qt::CaseInsensitive))
+            {
+                loadPlaylistFromFile(pathList.first());
+                return;
+            }
+
             for (auto &item : pathList)
             {
+                if (item.endsWith(".m3u", Qt::CaseInsensitive))
+                {
+                    continue;
+                }
                 playlist->append(item);
             }
         }
@@ -152,6 +162,59 @@ void MainWindow::on_qaLoadPlaylist_triggered()
     }
 
     auto playlistPath = files.first();
+    loadPlaylistFromFile(playlistPath);
+}
+
+void MainWindow::on_qaSavePlaylist_triggered()
+{
+    QFileDialog qfdSave(this);
+    qfdSave.setFileMode(QFileDialog::AnyFile);
+    qfdSave.setNameFilter(tr("Playlist files (*.m3u)"));
+    qfdSave.setWindowTitle(tr("Save playlist"));
+    qfdSave.setAcceptMode(QFileDialog::AcceptSave);
+    qfdSave.setConfirmOverwrite(true);
+
+    if (!qfdSave.exec())
+    {
+        return;
+    }
+
+    QStringList files = qfdSave.selectedFiles();
+
+    // TODO: error handling, perhaps
+    if (!files.count())
+    {
+        return;
+    }
+
+    auto playlistPath = files.first();
+    savePlaylistToFile(playlistPath);
+}
+
+void MainWindow::onSongChange(QString songName)
+{
+    slInfo->setFirstLine(songName);
+}
+
+void MainWindow::onRowUpdate(int row, int pattern, int channels)
+{
+    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2, %3 channels").arg(pattern).arg(row).arg(channels));
+}
+
+void MainWindow::onPlaybackStarted()
+{
+    ui->qaPlayPause->setIcon(QIcon(":/res/player_pause.png"));
+    slInfo->setSecondLine("Playing");
+}
+
+void MainWindow::onPlaybackPaused()
+{
+    ui->qaPlayPause->setIcon(QIcon(":/res/1rightarrow.png"));
+    slInfo->setSecondLine("Ready");
+}
+
+void MainWindow::loadPlaylistFromFile(const QString& playlistPath)
+{
     auto parser = new M3uParser(playlistPath);
     auto resolvedFiles = parser->parse();
 
@@ -182,29 +245,8 @@ void MainWindow::on_qaLoadPlaylist_triggered()
     delete parser;
 }
 
-void MainWindow::on_qaSavePlaylist_triggered()
+void MainWindow::savePlaylistToFile(const QString& playlistPath)
 {
-    QFileDialog qfdSave(this);
-    qfdSave.setFileMode(QFileDialog::AnyFile);
-    qfdSave.setNameFilter(tr("Playlist files (*.m3u)"));
-    qfdSave.setWindowTitle(tr("Save playlist"));
-    qfdSave.setAcceptMode(QFileDialog::AcceptSave);
-    qfdSave.setConfirmOverwrite(true);
-
-    if (!qfdSave.exec())
-    {
-        return;
-    }
-
-    QStringList files = qfdSave.selectedFiles();
-
-    // TODO: error handling, perhaps
-    if (!files.count())
-    {
-        return;
-    }
-
-    auto playlistPath = files.first();
     auto writer = new M3uWriter(playlistPath);
 
     QStringList paths;
@@ -216,26 +258,4 @@ void MainWindow::on_qaSavePlaylist_triggered()
     writer->write(&paths);
 
     delete writer;
-}
-
-void MainWindow::onSongChange(QString songName)
-{
-    slInfo->setFirstLine(songName);
-}
-
-void MainWindow::onRowUpdate(int row, int pattern, int channels)
-{
-    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2, %3 channels").arg(pattern).arg(row).arg(channels));
-}
-
-void MainWindow::onPlaybackStarted()
-{
-    ui->qaPlayPause->setIcon(QIcon(":/res/player_pause.png"));
-    slInfo->setSecondLine("Playing");
-}
-
-void MainWindow::onPlaybackPaused()
-{
-    ui->qaPlayPause->setIcon(QIcon(":/res/1rightarrow.png"));
-    slInfo->setSecondLine("Ready");
 }

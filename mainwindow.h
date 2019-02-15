@@ -58,6 +58,9 @@ private:
     Playlist* playlist;
     QThread playbackThread;
     Player* player;
+
+    void loadPlaylistFromFile(const QString& playlistPath);
+    void savePlaylistToFile(const QString& playlistPath);
 };
 
 #endif // MAINWINDOW_H
