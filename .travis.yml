@@ -1,0 +1,17 @@
+language: cpp
+sudo: required
+
+compiler: clang
+
+matrix:
+  allow_failures:
+    - os: linux
+  include:
+    - os: osx
+    - os: linux
+      dist: xenial
+
+install:
+  - ./.travis/install.sh
+
+script: ./.travis/compile.sh
