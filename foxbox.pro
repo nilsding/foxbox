@@ -30,14 +30,18 @@ SOURCES += \
     statuslabel.cpp \
     playlist.cpp \
     song.cpp \
-    player.cpp
+    player.cpp \
+    m3uparser.cpp \
+    m3uwriter.cpp
 
 HEADERS += \
     mainwindow.h \
     statuslabel.h \
     playlist.h \
     song.h \
-    player.h
+    player.h \
+    m3uparser.h \
+    m3uwriter.h
 
 FORMS += \
     mainwindow.ui

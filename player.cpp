@@ -2,11 +2,36 @@
 
 #include <QApplication>
 
+QMutex Player::mutex;
+
 Player::Player(Playlist* playlist, QObject *parent) :
     QObject(parent),
     _playlist(playlist)
 {
     _ao_driver_id = ao_default_driver_id();
+}
+
+void Player::setCurrentIndex(int currentIndex)
+{
+    // TODO: boundary check of currentIndex
+
+    if (_playlist->rowCount() == 0)
+    {
+        _currentIndex = 0;
+        return;
+    }
+
+    if (!_playing)
+    {
+        auto song = _playlist->at(_currentIndex);
+        song->_mod->set_position_order_row(0, 0);
+        song->_mod->ctl_set("play.at_end", "stop");
+    }
+
+    _currentIndex = currentIndex;
+
+    auto song = _playlist->at(currentIndex);
+    emit(songChange(song->songName()));
 }
 
 #define BUFFER_SIZE 2
@@ -39,6 +64,7 @@ void Player::play()
     while (_playing)
     {
         QApplication::processEvents();
+        mutex.lock();
         if (currentIndex != _currentIndex)
         {
             song->_mod->set_position_order_row(0, 0);
@@ -57,6 +83,7 @@ void Player::play()
             // the module's loop point again.  therefore: redo this iteration.
             if (_loop)
             {
+                mutex.unlock();
                 continue;
             }
 
@@ -68,9 +95,11 @@ void Player::play()
                 currentIndex = _currentIndex;
                 song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
                 emit(songChange(song->songName()));
+                mutex.unlock();
                 continue;
             }
             _playing = false;
+            mutex.unlock();
             break;
         }
 
@@ -86,6 +115,7 @@ void Player::play()
         }
 
         ao_play(_ao_device, reinterpret_cast<char*>(buf), static_cast<uint32_t>(read * 2));
+        mutex.unlock();
     }
     song->_mod->ctl_set("play.at_end", "stop");
     emit(playbackPaused());

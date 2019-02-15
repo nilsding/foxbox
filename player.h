@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <QObject>
+#include <QMutex>
 
 #include <ao/ao.h>
 
@@ -17,6 +18,9 @@ public:
     explicit Player(Playlist* playlist, QObject* parent = nullptr);
 
     bool playing() { return _playing; }
+    void setCurrentIndex(int currentIndex);
+
+    static QMutex mutex;
 
 signals:
     void songChange(QString songName);
@@ -33,11 +37,11 @@ public slots:
 
 private:
     Playlist* _playlist;
-    bool _playing;
-    bool _loop;
+    bool _playing = false;
+    bool _loop = false;
 
-    int _ao_driver_id;
-    ao_device* _ao_device;
+    int _ao_driver_id = -1;
+    ao_device* _ao_device = nullptr;
 
     int _row = 0;
     int _pattern = 0;
