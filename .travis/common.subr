@@ -1,0 +1,50 @@
+# Hey Emacs, give me -*- sh -*- ell!
+#
+# common.subr
+#   functions and constants used by several shell scripts
+
+if [ -z "${_common_subr_loaded}" ]; then
+_common_subr_loaded="YES"
+
+# Print a message
+#
+# Params:
+#   $1: colour (red | green | yellow | blue)
+#   $*: status to print
+#
+# Example usage:
+#   print_msg green "Successfully built $something"
+#
+#   print_msg red "An error occurred:" $msg
+print_msg() {
+    color="1"
+    case $1 in
+        red)    color="31;1" ;;
+        green)  color="32;1" ;;
+        yellow) color="33;1" ;;
+        blue)   color="34;1" ;;
+    esac
+    shift
+    printf " \033[${color}m*\033[0;1m %s\033[0m\n" "$*"
+}
+
+# Runs a command and prints the usage to stdout.
+#
+# Example usage:
+#   docmd rake
+docmd() {
+    print_msg blue $*
+    $*
+}
+
+# Runs a command, prints the usage to stdout, and checks for its return
+# status.  If it is anything else than 0, exit with that code.
+#
+# Example usage:
+#   docmd rake
+forcecmd() {
+    docmd $* || (ret=$?; print_msg red "$* exited with status code $ret"; exit $ret)
+}
+
+fi # [ -z "${_common_subr_loaded}" ]
+_common_subr_loaded=:
