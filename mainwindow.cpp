@@ -4,6 +4,7 @@
 #include <QIcon>
 #include <QMimeData>
 #include <QFileDialog>
+#include <QPropertyAnimation>
 
 #include "m3uparser.h"
 #include "m3uwriter.h"
@@ -189,6 +190,43 @@ void MainWindow::on_qaSavePlaylist_triggered()
 
     auto playlistPath = files.first();
     savePlaylistToFile(playlistPath);
+}
+
+void MainWindow::on_qaMiniplayer_triggered(bool checked)
+{
+    static int previousHeight = 320;
+    auto animation = new QPropertyAnimation(this, "size");
+    animation->setDuration(500);
+    animation->setEasingCurve(QEasingCurve::InOutQuart);
+
+    connect(animation, &QPropertyAnimation::finished, this, [=]()
+    {
+        if (checked)
+        {
+            setMaximumHeight(height());
+        }
+        else
+        {
+            ui->tableView->show();
+        }
+    });
+
+    if (checked)
+    {
+        previousHeight = height();
+        animation->setStartValue(QSize(width(), previousHeight));
+        animation->setEndValue(QSize(width(), ui->toolBar->height()));
+    }
+    else
+    {
+        setMaximumHeight(maximumWidth()); // maximumWidth is always max
+        animation->setStartValue(QSize(width(), height()));
+        animation->setEndValue(QSize(width(), previousHeight));
+    }
+
+    ui->toolBar->setMovable(!checked);
+    ui->tableView->hide();
+    animation->start();
 }
 
 void MainWindow::onSongChange(QString songName)
