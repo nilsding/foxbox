@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     slInfo(new StatusLabel),
+    qsVolume(new QSlider),
     playlist(new Playlist),
     player(new Player(playlist))
 {
@@ -22,6 +23,10 @@ MainWindow::MainWindow(QWidget *parent) :
     slInfo->setFirstLine("foxbox 0.1.0");
     slInfo->setSecondLine("Ready");
     ui->toolBar->insertWidget(ui->qaLoop, slInfo);
+    qsVolume->setOrientation(Qt::Horizontal);
+    qsVolume->setRange(0, 100);
+    qsVolume->setValue(100);
+    ui->toolBar->insertWidget(ui->qaLoop, qsVolume);
 
     ui->tableView->setModel(playlist);
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
@@ -34,6 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, &MainWindow::pause, player, &Player::pause);
     connect(this, &MainWindow::nextTrack, player, &Player::nextTrack);
     connect(this, &MainWindow::previousTrack, player, &Player::previousTrack);
+    connect(qsVolume, &QSlider::valueChanged, player, &Player::setVolume);
     connect(ui->qaLoop, &QAction::triggered, player, &Player::setLoop);
     connect(player, &Player::songChange, this, &MainWindow::onSongChange);
     connect(player, &Player::rowUpdate, this, &MainWindow::onRowUpdate);
@@ -48,6 +54,7 @@ MainWindow::~MainWindow()
 
     delete player;
     delete playlist;
+    delete qsVolume;
     delete slInfo;
     delete ui;
 }

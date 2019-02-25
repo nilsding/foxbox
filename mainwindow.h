@@ -9,6 +9,7 @@
 #include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QThread>
+#include <QSlider>
 
 #include "player.h"
 #include "playlist.h"
@@ -56,6 +57,7 @@ private:
     Ui::MainWindow* ui;
 
     StatusLabel* slInfo;
+    QSlider* qsVolume;
     Playlist* playlist;
     QThread playbackThread;
     Player* player;
