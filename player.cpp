@@ -2,6 +2,11 @@
 
 #include <QApplication>
 #include <cmath>
+#include <QAudioFormat>
+#include <QAudioDeviceInfo>
+#include <QByteArray>
+#include <QDebug>
+#include <QIODevice>
 
 QMutex Player::mutex;
 
@@ -9,7 +14,6 @@ Player::Player(Playlist* playlist, QObject *parent) :
     QObject(parent),
     _playlist(playlist)
 {
-    _ao_driver_id = ao_default_driver_id();
     connect(playlist, &Playlist::currentIndexChanged, this, &Player::onCurrentIndexChanged);
 }
 
@@ -18,7 +22,7 @@ Player::Player(Playlist* playlist, QObject *parent) :
 void Player::play()
 {
     auto currentIndex = _playlist->currentIndex();
-    int16_t buf[BUFFER_SIZE * 2] = { 0x00 };
+    QByteArray buf(BUFFER_SIZE * 2 * 2, 0x00); // frame size * 2 (bytes for uint16) * 2 (channels)
 
     if (_playlist->rowCount() == 0)
     {
@@ -29,14 +33,27 @@ void Player::play()
     song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
     emit(songChange(song->songName()));
 
-    ao_sample_format sample_format;
-    sample_format.bits = 16;
-    sample_format.rate = 24000; // 48000 / 2
-    sample_format.channels = 2;
-    sample_format.byte_format = AO_FMT_NATIVE;
-    sample_format.matrix = nullptr;
+    QAudioFormat sampleFormat;
+    sampleFormat.setSampleSize(16);
+    sampleFormat.setSampleRate(48000); // 48000 / 2
+    sampleFormat.setChannelCount(2);
+    sampleFormat.setCodec("audio/pcm");
+    sampleFormat.setByteOrder(QAudioFormat::LittleEndian);
+    sampleFormat.setSampleType(QAudioFormat::SignedInt);
 
-    _ao_device = ao_open_live(_ao_driver_id, &sample_format, nullptr);
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (!info.isFormatSupported(sampleFormat))
+    {
+      qWarning() << "Raw audio format not supported by backend, using nearest supported format.";
+      sampleFormat = info.nearestFormat(sampleFormat);
+    }
+
+    if (_audioOutput == nullptr)
+    {
+      _audioOutput = new QAudioOutput(sampleFormat, nullptr);
+    }
+
+    QIODevice *output = _audioOutput->start();
 
     _playing = true;
     emit(playbackStarted());
@@ -60,7 +77,7 @@ void Player::play()
             currentIndex = _playlist->currentIndex();
         }
 
-        auto read = song->_mod->read_interleaved_stereo(48000, BUFFER_SIZE, buf);
+        auto read = song->_mod->read_interleaved_stereo(48000, BUFFER_SIZE, reinterpret_cast<int16_t *>(buf.data()));
         if (read == 0)
         {
             // when module ctl `play.at_end` is set to continue, at the end of the
@@ -100,19 +117,23 @@ void Player::play()
 
         if (_volume < 1.0)
         {
-            for (int i = 0; i < BUFFER_SIZE * 2; i++)
+            for (int i = 0; i < read * 2; i++)
             {
                 buf[i] = static_cast<int16_t>(buf[i] * _volume);
             }
         }
 
-        ao_play(_ao_device, reinterpret_cast<char*>(buf), static_cast<uint32_t>(read * 2));
+        output->write(buf, read * 2 * 2);
+        // wait until audio output needs more data
+        while (_audioOutput->bytesFree() < _audioOutput->periodSize()) {};
         mutex.unlock();
     }
     song->_mod->ctl_set("play.at_end", "stop");
     emit(playbackPaused());
 
-    ao_close(_ao_device);
+    _audioOutput->stop();
+    _audioOutput->deleteLater();
+    _audioOutput = nullptr;
 }
 
 void Player::pause()
