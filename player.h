@@ -33,6 +33,7 @@ public slots:
     void pause();
     void nextTrack();
     void previousTrack();
+    void setVolume(int volume);
     void setLoop(bool loop);
 
 private:
@@ -48,6 +49,8 @@ private:
     int _channels = 0;
 
     int _currentIndex = 0;
+
+    double _volume = 1.0;
 };
 
 #endif // PLAYER_H

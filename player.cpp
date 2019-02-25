@@ -1,6 +1,7 @@
 #include "player.h"
 
 #include <QApplication>
+#include <cmath>
 
 QMutex Player::mutex;
 
@@ -114,6 +115,14 @@ void Player::play()
             _channels = channels;
         }
 
+        if (_volume < 1.0)
+        {
+            for (int i = 0; i < BUFFER_SIZE * 2; i++)
+            {
+                buf[i] = static_cast<int16_t>(buf[i] * _volume);
+            }
+        }
+
         ao_play(_ao_device, reinterpret_cast<char*>(buf), static_cast<uint32_t>(read * 2));
         mutex.unlock();
     }
@@ -172,6 +181,11 @@ void Player::previousTrack()
         }
         _currentIndex--;
     }
+}
+
+void Player::setVolume(int volume)
+{
+    _volume = std::pow(volume / 100.0, M_E);
 }
 
 void Player::setLoop(bool loop)
