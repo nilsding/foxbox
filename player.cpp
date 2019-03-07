@@ -39,6 +39,7 @@ void Player::play()
     _ao_device = ao_open_live(_ao_driver_id, &sample_format, nullptr);
 
     _playing = true;
+    _loopCount = 0;
     emit(playbackStarted());
     while (_playing)
     {
@@ -51,6 +52,7 @@ void Player::play()
             song = _playlist->currentSong();
             song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
             currentIndex = _playlist->currentIndex();
+            _loopCount = 0;
             emit(songChange(song->songName()));
         }
 
@@ -62,6 +64,7 @@ void Player::play()
             // the module's loop point again.  therefore: redo this iteration.
             if (_loop)
             {
+                _loopCount++;
                 mutex.unlock();
                 continue;
             }
@@ -73,6 +76,7 @@ void Player::play()
                 _playlist->setCurrentIndex(++currentIndex);
                 song = _playlist->currentSong();
                 song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+                _loopCount = 0;
                 emit(songChange(song->songName()));
                 mutex.unlock();
                 continue;
@@ -185,6 +189,7 @@ void Player::onCurrentIndexChanged(int from, int /* to */)
         song->_mod->ctl_set("play.at_end", "stop");
     }
 
+    _loopCount = 0;
     auto song = _playlist->currentSong();
     emit(songChange(song->songName()));
 }

@@ -37,6 +37,8 @@ public slots:
 
     void onCurrentIndexChanged(int from, int to);
 
+    int loopCount() { return _loopCount; }
+
 private:
     Playlist* _playlist;
     bool _playing = false;
@@ -50,6 +52,8 @@ private:
     int _channels = 0;
 
     double _volume = 1.0;
+
+    int _loopCount = 0;
 };
 
 #endif // PLAYER_H
