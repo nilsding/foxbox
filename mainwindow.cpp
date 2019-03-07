@@ -236,6 +236,15 @@ void MainWindow::on_qaMiniplayer_triggered(bool checked)
     animation->start();
 }
 
+void MainWindow::on_tableView_doubleClicked(const QModelIndex& index)
+{
+    player->setCurrentIndex(index.row());
+    if (!player->playing())
+    {
+        emit(play());
+    }
+}
+
 void MainWindow::onSongChange(QString songName)
 {
     slInfo->setFirstLine(songName);
