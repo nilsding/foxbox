@@ -8,6 +8,8 @@
 
 #include <QToolBar>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QPushButton>
 
 #include "m3uparser.h"
 #include "m3uwriter.h"
@@ -23,12 +25,42 @@ MainWindow::MainWindow(QWidget *parent) :
     setAcceptDrops(true);
     ui->setupUi(this);
 
-    QWidget *widget = new QWidget(this);
+    QWidget* widget = new QWidget(this);
     widget->setSizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Minimum);
-    QVBoxLayout *vbox = new QVBoxLayout(widget);
+    QVBoxLayout* vbox = new QVBoxLayout(widget);
     vbox->setSpacing(5);
     vbox->setContentsMargins(0, 0, 0, 0);
     widget->setLayout(vbox);
+
+    QWidget* buttWidget = new QWidget(this);
+    buttWidget->setSizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Minimum);
+    QHBoxLayout* hbox = new QHBoxLayout(buttWidget);
+    hbox->setSpacing(0);
+    hbox->setContentsMargins(0, 0, 0, 0);
+    buttWidget->setLayout(hbox);
+    QPushButton* qpbPrevious = new QPushButton();
+    qpbPrevious->setMinimumSize(QSize(32, 32));
+    qpbPrevious->setFlat(true);
+    qpbPrevious->setIcon(QIcon(":/res/player_start.png"));
+    qpbPrevious->setIconSize(QSize(32, 32));
+    connect(qpbPrevious, &QPushButton::clicked, this, &MainWindow::on_qaPrevious_triggered);
+    hbox->addWidget(qpbPrevious);
+    QPushButton* qpbPlayPause = new QPushButton();
+    qpbPlayPause->setMinimumSize(QSize(32, 32));
+    qpbPlayPause->setFlat(true);
+    qpbPlayPause->setIcon(QIcon(":/res/1rightarrow.png"));
+    qpbPlayPause->setIconSize(QSize(32, 32));
+    connect(qpbPlayPause, &QPushButton::clicked, this, &MainWindow::on_qaPlayPause_triggered);
+    hbox->addWidget(qpbPlayPause);
+    QPushButton* qpbNext = new QPushButton();
+    qpbNext->setMinimumSize(QSize(32, 32));
+    qpbNext->setFlat(true);
+    qpbNext->setIcon(QIcon(":/res/player_end.png"));
+    qpbNext->setIconSize(QSize(32, 32));
+    connect(qpbNext, &QPushButton::clicked, this, &MainWindow::on_qaNext_triggered);
+    hbox->addWidget(qpbNext);
+    vbox->addWidget(buttWidget);
+#if 0
     QToolBar* qtbwtf = new QToolBar("", this);
     QPalette pal;
     pal.setColor(QPalette::Background, Qt::transparent);
@@ -37,9 +69,12 @@ MainWindow::MainWindow(QWidget *parent) :
     qtbwtf->addAction(ui->qaPlayPause);
     qtbwtf->addAction(ui->qaNext);
     vbox->addWidget(qtbwtf);
+#endif
+
     qsVolume->setOrientation(Qt::Horizontal);
     qsVolume->setRange(0, 100);
     qsVolume->setValue(100);
+    qsVolume->setMaximumWidth(128);
     vbox->addWidget(qsVolume);
     ui->toolBar->insertWidget(ui->qaLoop, widget);
 
@@ -134,6 +169,10 @@ void MainWindow::dropEvent(QDropEvent* event)
                 playlist->append(item);
             }
         }
+    }
+    else if (mimeData->hasText())
+    {
+        slInfo->setStyleSheet(mimeData->text());
     }
 }
 
