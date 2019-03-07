@@ -92,9 +92,6 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="qaPrevious"/>
-   <addaction name="qaPlayPause"/>
-   <addaction name="qaNext"/>
    <addaction name="qaLoop"/>
   </widget>
   <action name="qaPlayPause">

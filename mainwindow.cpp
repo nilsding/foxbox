@@ -6,6 +6,9 @@
 #include <QFileDialog>
 #include <QPropertyAnimation>
 
+#include <QToolBar>
+#include <QVBoxLayout>
+
 #include "m3uparser.h"
 #include "m3uwriter.h"
 
@@ -20,13 +23,29 @@ MainWindow::MainWindow(QWidget *parent) :
     setAcceptDrops(true);
     ui->setupUi(this);
 
-    slInfo->setFirstLine("foxbox 0.1.0");
-    slInfo->setSecondLine("Ready");
-    ui->toolBar->insertWidget(ui->qaLoop, slInfo);
+    QWidget *widget = new QWidget(this);
+    widget->setSizePolicy(QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Minimum);
+    QVBoxLayout *vbox = new QVBoxLayout(widget);
+    vbox->setSpacing(5);
+    vbox->setContentsMargins(0, 0, 0, 0);
+    widget->setLayout(vbox);
+    QToolBar* qtbwtf = new QToolBar("", this);
+    QPalette pal;
+    pal.setColor(QPalette::Background, Qt::transparent);
+    qtbwtf->setPalette(pal);
+    qtbwtf->addAction(ui->qaPrevious);
+    qtbwtf->addAction(ui->qaPlayPause);
+    qtbwtf->addAction(ui->qaNext);
+    vbox->addWidget(qtbwtf);
     qsVolume->setOrientation(Qt::Horizontal);
     qsVolume->setRange(0, 100);
     qsVolume->setValue(100);
-    ui->toolBar->insertWidget(ui->qaLoop, qsVolume);
+    vbox->addWidget(qsVolume);
+    ui->toolBar->insertWidget(ui->qaLoop, widget);
+
+    slInfo->setFirstLine("foxbox 0.1.0");
+    slInfo->setSecondLine("Ready");
+    ui->toolBar->insertWidget(ui->qaLoop, slInfo);
 
     ui->tableView->setModel(playlist);
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
