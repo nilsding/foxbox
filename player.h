@@ -18,7 +18,6 @@ public:
     explicit Player(Playlist* playlist, QObject* parent = nullptr);
 
     bool playing() { return _playing; }
-    void setCurrentIndex(int currentIndex);
 
     static QMutex mutex;
 
@@ -36,6 +35,8 @@ public slots:
     void setVolume(int volume);
     void setLoop(bool loop);
 
+    void onCurrentIndexChanged(int from, int to);
+
 private:
     Playlist* _playlist;
     bool _playing = false;
@@ -47,8 +48,6 @@ private:
     int _row = 0;
     int _pattern = 0;
     int _channels = 0;
-
-    int _currentIndex = 0;
 
     double _volume = 1.0;
 };
