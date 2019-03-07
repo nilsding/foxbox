@@ -10,36 +10,14 @@ Player::Player(Playlist* playlist, QObject *parent) :
     _playlist(playlist)
 {
     _ao_driver_id = ao_default_driver_id();
-}
-
-void Player::setCurrentIndex(int currentIndex)
-{
-    // TODO: boundary check of currentIndex
-
-    if (_playlist->rowCount() == 0)
-    {
-        _currentIndex = 0;
-        return;
-    }
-
-    if (!_playing)
-    {
-        auto song = _playlist->at(_currentIndex);
-        song->_mod->set_position_order_row(0, 0);
-        song->_mod->ctl_set("play.at_end", "stop");
-    }
-
-    _currentIndex = currentIndex;
-
-    auto song = _playlist->at(currentIndex);
-    emit(songChange(song->songName()));
+    connect(playlist, &Playlist::currentIndexChanged, this, &Player::onCurrentIndexChanged);
 }
 
 #define BUFFER_SIZE 2
 
 void Player::play()
 {
-    auto currentIndex = _currentIndex;
+    auto currentIndex = _playlist->currentIndex();
     int16_t buf[BUFFER_SIZE * 2] = { 0x00 };
 
     if (_playlist->rowCount() == 0)
@@ -66,13 +44,13 @@ void Player::play()
     {
         QApplication::processEvents();
         mutex.lock();
-        if (currentIndex != _currentIndex)
+        if (currentIndex != _playlist->currentIndex())
         {
             song->_mod->set_position_order_row(0, 0);
             song->_mod->ctl_set("play.at_end", "stop");
-            song = _playlist->at(_currentIndex);
+            song = _playlist->currentSong();
             song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
-            currentIndex = _currentIndex;
+            currentIndex = _playlist->currentIndex();
             emit(songChange(song->songName()));
         }
 
@@ -90,10 +68,10 @@ void Player::play()
 
             song->_mod->set_position_order_row(0, 0);
             song->_mod->ctl_set("play.at_end", "stop");
-            if (_playlist->rowCount() > _currentIndex + 1)
+            if (_playlist->rowCount() > _playlist->currentIndex() + 1)
             {
-                song = _playlist->at(++_currentIndex);
-                currentIndex = _currentIndex;
+                _playlist->setCurrentIndex(++currentIndex);
+                song = _playlist->currentSong();
                 song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
                 emit(songChange(song->songName()));
                 mutex.unlock();
@@ -144,15 +122,15 @@ void Player::nextTrack()
         return;
     }
 
-    if (_playlist->rowCount() > _currentIndex + 1)
+    if (_playlist->rowCount() > _playlist->currentIndex() + 1)
     {
         if (!_playing)
         {
-            auto song = _playlist->at(_currentIndex);
+            auto song = _playlist->currentSong();
             song->_mod->set_position_order_row(0, 0);
             song->_mod->ctl_set("play.at_end", "stop");
         }
-        _currentIndex++;
+        _playlist->setCurrentIndex(_playlist->currentIndex() + 1);
     }
 }
 
@@ -163,7 +141,7 @@ void Player::previousTrack()
         return;
     }
 
-    auto song = _playlist->at(_currentIndex);
+    auto song = _playlist->currentSong();
 
     // rewind the song if it has been played for longer than 1 second
     if (_playing && song->_mod->get_position_seconds() > 1.0)
@@ -172,14 +150,14 @@ void Player::previousTrack()
         return;
     }
 
-    if (_currentIndex - 1 >= 0)
+    if (_playlist->currentIndex() - 1 >= 0)
     {
         if (!_playing)
         {
             song->_mod->set_position_order_row(0, 0);
             song->_mod->ctl_set("play.at_end", "stop");
         }
-        _currentIndex--;
+        _playlist->setCurrentIndex(_playlist->currentIndex() - 1);
     }
 }
 
@@ -193,7 +171,20 @@ void Player::setLoop(bool loop)
     _loop = loop;
     if (_playing)
     {
-        auto song = _playlist->at(_currentIndex);
+        auto song = _playlist->currentSong();
         song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
     }
+}
+
+void Player::onCurrentIndexChanged(int from, int /* to */)
+{
+    if (!_playing)
+    {
+        auto song = _playlist->at(from);
+        song->_mod->set_position_order_row(0, 0);
+        song->_mod->ctl_set("play.at_end", "stop");
+    }
+
+    auto song = _playlist->currentSong();
+    emit(songChange(song->songName()));
 }
