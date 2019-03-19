@@ -32,7 +32,8 @@ SOURCES += \
     song.cpp \
     player.cpp \
     m3uparser.cpp \
-    m3uwriter.cpp
+    m3uwriter.cpp \
+    aboutdialog.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -41,7 +42,8 @@ HEADERS += \
     song.h \
     player.h \
     m3uparser.h \
-    m3uwriter.h
+    m3uwriter.h \
+    aboutdialog.h
 
 FORMS += \
     mainwindow.ui

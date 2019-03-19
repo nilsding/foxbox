@@ -70,8 +70,16 @@
     </property>
     <addaction name="qaMiniplayer"/>
    </widget>
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
+     <string>&amp;Help</string>
+    </property>
+    <addaction name="qaAboutFoxbox"/>
+    <addaction name="qaAboutQt"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_View"/>
+   <addaction name="menu_Help"/>
   </widget>
   <widget class="QToolBar" name="toolBar">
    <property name="windowTitle">
@@ -160,6 +168,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
+   </property>
+  </action>
+  <action name="qaAboutFoxbox">
+   <property name="text">
+    <string>About foxbox</string>
+   </property>
+  </action>
+  <action name="qaAboutQt">
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>
