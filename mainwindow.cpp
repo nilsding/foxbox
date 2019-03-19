@@ -4,8 +4,10 @@
 #include <QIcon>
 #include <QMimeData>
 #include <QFileDialog>
+#include <QMessageBox>
 #include <QPropertyAnimation>
 
+#include "aboutdialog.h"
 #include "m3uparser.h"
 #include "m3uwriter.h"
 
@@ -234,6 +236,19 @@ void MainWindow::on_qaMiniplayer_triggered(bool checked)
     ui->toolBar->setMovable(!checked);
     ui->tableView->hide();
     animation->start();
+}
+
+void MainWindow::on_qaAboutFoxbox_triggered()
+{
+    auto ad = new AboutDialog(this);
+    ad->setModal(true);
+    ad->exec();
+    ad->deleteLater();
+}
+
+void MainWindow::on_qaAboutQt_triggered()
+{
+    QMessageBox::aboutQt(this);
 }
 
 void MainWindow::on_tableView_doubleClicked(const QModelIndex& index)
