@@ -143,8 +143,8 @@ void Player::previousTrack()
 
     auto song = _playlist->currentSong();
 
-    // rewind the song if it has been played for longer than 1 second
-    if (_playing && song->_mod->get_position_seconds() > 1.0)
+    // rewind the song if it has been played for more than 3 seconds
+    if (_playing && song->_mod->get_position_seconds() > 3.0)
     {
         song->_mod->set_position_order_row(0, 0);
         return;
