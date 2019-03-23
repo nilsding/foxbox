@@ -2,6 +2,9 @@
 #define ABOUTDIALOG_H
 
 #include <QDialog>
+#include <QCloseEvent>
+#include <QPaintEvent>
+#include <QMouseEvent>
 #include <QTime>
 #include <QTimer>
 #include <QList>
