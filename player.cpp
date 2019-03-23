@@ -84,13 +84,12 @@ void Player::play()
 
         auto row = song->_mod->get_current_row();
         auto pattern = song->_mod->get_current_pattern();
-        auto channels = song->_mod->get_current_playing_channels();
-        if (_row != row || _pattern != pattern || _channels != channels)
+        if (_row != row || _pattern != pattern)
         {
+            auto channels = song->_mod->get_current_playing_channels();
             emit(rowUpdate(row, pattern, channels));
             _row = row;
             _pattern = pattern;
-            _channels = channels;
         }
 
         if (_volume < 1.0)

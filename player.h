@@ -47,7 +47,6 @@ private:
 
     int _row = 0;
     int _pattern = 0;
-    int _channels = 0;
 
     double _volume = 1.0;
 };
