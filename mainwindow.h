@@ -40,10 +40,12 @@ signals:
     void nextTrack();
     void previousTrack();
 
+public slots:
+    void onPlayPressed();
+    void onNextPressed();
+    void onPreviousPressed();
+
 private slots:
-    void on_qaPlayPause_triggered();
-    void on_qaNext_triggered();
-    void on_qaPrevious_triggered();
     void on_qaLoadPlaylist_triggered();
     void on_qaSavePlaylist_triggered();
     void on_qaMiniplayer_triggered(bool checked);

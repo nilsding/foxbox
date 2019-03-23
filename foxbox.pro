@@ -43,7 +43,8 @@ HEADERS += \
     player.h \
     m3uparser.h \
     m3uwriter.h \
-    aboutdialog.h
+    aboutdialog.h \
+    nativefilters.h
 
 FORMS += \
     mainwindow.ui
@@ -60,3 +61,12 @@ LIBS += \
 
 RESOURCES += \
     res.qrc
+
+mac {
+    OBJECTIVE_SOURCES += \
+        nativefilters_mac.mm
+    HEADERS += \
+        nativefilters_mac.h
+    LIBS += \
+        -framework AppKit
+}
