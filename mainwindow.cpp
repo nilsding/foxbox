@@ -43,6 +43,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, &MainWindow::previousTrack, player, &Player::previousTrack);
     connect(qsVolume, &QSlider::valueChanged, player, &Player::setVolume);
     connect(ui->qaLoop, &QAction::triggered, player, &Player::setLoop);
+    connect(ui->qaPlayPause, &QAction::triggered, this, &MainWindow::onPlayPressed);
+    connect(ui->qaNext, &QAction::triggered, this, &MainWindow::onNextPressed);
+    connect(ui->qaPrevious, &QAction::triggered, this, &MainWindow::onPreviousPressed);
     connect(player, &Player::songChange, this, &MainWindow::onSongChange);
     connect(player, &Player::rowUpdate, this, &MainWindow::onRowUpdate);
     connect(player, &Player::playbackStarted, this, &MainWindow::onPlaybackStarted);
@@ -120,7 +123,7 @@ void MainWindow::dropEvent(QDropEvent* event)
     }
 }
 
-void MainWindow::on_qaPlayPause_triggered()
+void MainWindow::onPlayPressed()
 {
     if (player->playing())
     {
@@ -131,7 +134,7 @@ void MainWindow::on_qaPlayPause_triggered()
     emit(play());
 }
 
-void MainWindow::on_qaNext_triggered()
+void MainWindow::onNextPressed()
 {
     emit(nextTrack());
 
@@ -141,7 +144,7 @@ void MainWindow::on_qaNext_triggered()
     }
 }
 
-void MainWindow::on_qaPrevious_triggered()
+void MainWindow::onPreviousPressed()
 {
     emit(previousTrack());
 
@@ -267,7 +270,7 @@ void MainWindow::onSongChange(QString songName)
 
 void MainWindow::onRowUpdate(int row, int pattern, int channels)
 {
-    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2, %3 channels").arg(pattern).arg(row).arg(channels));
+    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2, %3 channels").arg(QString::number(pattern), QString::number(row), QString::number(channels)));
 }
 
 void MainWindow::onPlaybackStarted()
