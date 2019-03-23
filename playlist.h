@@ -10,6 +10,7 @@
 class Playlist : public QAbstractTableModel
 {
     Q_OBJECT
+    Q_PROPERTY(int currentIndex READ currentIndex WRITE setCurrentIndex NOTIFY currentIndexChanged)
 
 public:
     Playlist();
@@ -21,11 +22,21 @@ public:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
     void append(QString path);
+    void clear();
 
+    Song* currentSong();
     Song* at(int index);
+
+    int currentIndex() { return _currentIndex; }
+    void setCurrentIndex(int currentIndex);
+
+signals:
+    void currentIndexChanged(int from, int to);
 
 private:
     QList<Song*> _songList;
+
+    int _currentIndex = 0;
 };
 
 #endif // PLAYLIST_H

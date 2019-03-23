@@ -9,6 +9,7 @@
 #include <QDragLeaveEvent>
 #include <QDropEvent>
 #include <QThread>
+#include <QSlider>
 
 #include "player.h"
 #include "playlist.h"
@@ -41,10 +42,19 @@ signals:
     void nextTrack();
     void previousTrack();
 
+public slots:
+    void onPlayPressed();
+    void onNextPressed();
+    void onPreviousPressed();
+
 private slots:
-    void on_qaPlayPause_triggered();
-    void on_qaNext_triggered();
-    void on_qaPrevious_triggered();
+    void on_qaLoadPlaylist_triggered();
+    void on_qaSavePlaylist_triggered();
+    void on_qaMiniplayer_triggered(bool checked);
+    void on_qaAboutFoxbox_triggered();
+    void on_qaAboutQt_triggered();
+    void on_tableView_doubleClicked(const QModelIndex& index);
+
     void onSongChange(QString songName, int channelCount);
     void onRowUpdate(int row, int pattern, int channels);
     void onPlaybackStarted();
@@ -54,11 +64,15 @@ private:
     Ui::MainWindow* ui;
 
     StatusLabel* slInfo;
+    QSlider* qsVolume;
     Playlist* playlist;
     QThread playbackThread;
     Player* player;
 
     VisWindow* visWindow;
+
+    void loadPlaylistFromFile(const QString& playlistPath);
+    void savePlaylistToFile(const QString& playlistPath);
 };
 
 #endif // MAINWINDOW_H
