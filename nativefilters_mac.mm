@@ -41,9 +41,11 @@ void NativeFilter::emitMediaKeyEvent(int keyCode, bool pressed, bool /* repeat *
     case NX_KEYTYPE_PLAY:
         emit(mediaKeyDownPlay());
         break;
+    case NX_KEYTYPE_FAST:
     case NX_KEYTYPE_NEXT:
         emit(mediaKeyDownNext());
         break;
+    case NX_KEYTYPE_REWIND:
     case NX_KEYTYPE_PREVIOUS:
         emit(mediaKeyDownPrevious());
         break;
