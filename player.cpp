@@ -46,12 +46,18 @@ void Player::play()
         mutex.lock();
         if (currentIndex != _playlist->currentIndex())
         {
-            song->_mod->set_position_order_row(0, 0);
-            song->_mod->ctl_set("play.at_end", "stop");
-            song = _playlist->currentSong();
-            song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+            // only change the actual song if the change was caused by moving
+            // the song around in the playlist
+            if (song != _playlist->currentSong())
+            {
+                song->_mod->set_position_order_row(0, 0);
+                song->_mod->ctl_set("play.at_end", "stop");
+                song = _playlist->currentSong();
+                song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+                emit(songChange(song->songName()));
+            }
+
             currentIndex = _playlist->currentIndex();
-            emit(songChange(song->songName()));
         }
 
         auto read = song->_mod->read_interleaved_stereo(48000, BUFFER_SIZE, buf);

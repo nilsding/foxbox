@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent) :
     qsVolume->setValue(100);
     ui->toolBar->insertWidget(ui->qaLoop, qsVolume);
 
+    playlist->setParent(ui->tableView);
     ui->tableView->setModel(playlist);
     ui->tableView->horizontalHeader()->setStretchLastSection(true);
     ui->tableView->horizontalHeader()->setDefaultSectionSize(200);

@@ -2,6 +2,11 @@
 
 #include <QPalette>
 #include <QIcon>
+#include <QMimeData>
+#include <QTableView>
+#include <algorithm>
+
+#define DRAG_DROP_MIME_TYPE "application/x-foxboxplaylistindexnumbers"
 
 Playlist::Playlist()
 {}
@@ -75,6 +80,157 @@ QVariant Playlist::headerData(int section, Qt::Orientation orientation, int role
     }
 
     return QVariant::Invalid;
+}
+
+Qt::ItemFlags Playlist::flags(const QModelIndex& index) const
+{
+    Qt::ItemFlags defaultFlags = QAbstractTableModel::flags(index);
+
+    if (index.isValid())
+    {
+        return Qt::ItemIsDragEnabled | defaultFlags;
+    }
+    return Qt::ItemIsDropEnabled | defaultFlags;
+}
+
+Qt::DropActions Playlist::supportedDropActions() const
+{
+    return Qt::MoveAction;
+}
+
+QStringList Playlist::mimeTypes() const
+{
+    return QAbstractItemModel::mimeTypes() << DRAG_DROP_MIME_TYPE;
+}
+
+QMimeData* Playlist::mimeData(const QModelIndexList &indexes) const
+{
+    QMimeData* mimeData = new QMimeData();
+    QByteArray encodedData;
+
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    for (auto &index : indexes)
+    {
+        if (!(index.isValid() && index.column() == 0))
+        {
+            continue;
+        }
+        stream << index.row();
+    }
+
+    mimeData->setData(DRAG_DROP_MIME_TYPE, encodedData);
+
+    return mimeData;
+}
+
+bool Playlist::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+{
+    if (!canDropMimeData(data, action, row, column, parent))
+    {
+        return false;
+    }
+
+    if (action == Qt::IgnoreAction)
+    {
+        return true;
+    }
+
+    int beginRow;
+
+    if (row != -1)
+    {
+        beginRow = row;
+    }
+    else
+    {
+        beginRow = rowCount();
+    }
+
+    QByteArray encodedData = data->data(DRAG_DROP_MIME_TYPE);
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    QList<int> sourceRows;
+    int rows = 0;
+
+    while (!stream.atEnd())
+    {
+        int rowNumber;
+        stream >> rowNumber;
+        sourceRows << rowNumber;
+        ++rows;
+    }
+
+    // all of this that follows is probably just some darn workaround/hack
+    // around something that Qt provides but I'm too lazy to implement for now.
+    // works good enough for me, so ehhh ¯\_(ツ)_/¯
+
+    // sort the row numbers
+    std::sort(sourceRows.begin(), sourceRows.end(),
+              [](const int a, const int b) { return a < b; });
+
+    // get the song objects for the row numbers
+    QList<Song*> selectedSongs;
+    for (auto sourceRow : sourceRows)
+    {
+        selectedSongs << _songList.at(sourceRow);
+
+        // edge cases: beginRow is set to sourceRow, which means that we want to
+        // insert the songs after it.  increment it
+        if (beginRow == sourceRow)
+        {
+            beginRow++;
+        }
+    }
+
+    // make sure beginRow (drop target row) is not out of bounds
+    // this means that the dropped songs should come after the last song in the
+    // playlist
+    bool shouldAppend = false;
+    if (beginRow >= _songList.count())
+    {
+        beginRow = _songList.count() - 1;
+        shouldAppend = true;
+    }
+
+    // get the song object for the target row
+    Song* targetSong = _songList.at(beginRow);
+    // get the current playing song object
+    Song* currentSongObj = currentSong();
+
+    // remove all songs from their previous positions from back to front
+    for (auto it = sourceRows.rbegin(); it != sourceRows.rend(); it++)
+    {
+        _songList.removeAt(*it);
+    };
+
+    // figure out the new target row
+    // this is perfectly fine, since we create a new Song object is for each
+    // loaded file.  we are comparing pointers here, not file paths!
+    int newSourceRow = _songList.indexOf(targetSong);
+    if (shouldAppend)
+    {
+        newSourceRow++;
+    }
+
+    // insert the new songs at their desired position
+    for (auto it = selectedSongs.rbegin(); it != selectedSongs.rend(); it++)
+    {
+        _songList.insert(newSourceRow, *it);
+    }
+
+    // and select them ;-)
+    auto tview = qobject_cast<QTableView*>(this->parent());
+    tview->selectionModel()->clearSelection();
+    auto topLeft = index(newSourceRow, 0);
+    auto bottomRight = index(newSourceRow + selectedSongs.count() - 1, columnCount() - 1);
+    auto selection = QItemSelection(topLeft, bottomRight);
+    tview->selectionModel()->select(selection, QItemSelectionModel::Select);
+
+    // finally, reassign the current song index to the song that's actually
+    // playing
+    _currentIndex = _songList.indexOf(currentSongObj);
+
+    return true;
 }
 
 void Playlist::append(QString path)
