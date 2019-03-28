@@ -21,6 +21,12 @@ public:
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 
+    Qt::ItemFlags flags(const QModelIndex& index) const;
+    Qt::DropActions supportedDropActions() const;
+    QStringList mimeTypes() const;
+    QMimeData* mimeData(const QModelIndexList &indexes) const;
+    bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
+
     void append(QString path);
     void clear();
 
