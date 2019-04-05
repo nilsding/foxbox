@@ -1,0 +1,56 @@
+QSlider::groove {
+  border: 1px inset #333;
+  height: 3px;
+  border-radius: 50%;
+}
+
+QSlider::sub-page {
+  border: 1px inset #000;
+  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(119, 160, 49, 255), stop:1 rgba(169, 227, 70, 255));
+}
+
+QSlider::add-page {
+  border: 1px inset #333;
+  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(93, 93, 93, 255), stop:1 rgba(134, 137, 137, 255));
+}
+
+QSlider::handle {
+  background: rgba(189, 206, 214, 255);
+  border-top:  1px outset rgba(189, 206, 214, 255);
+  border-left:   1px outset rgba(189, 206, 214, 255);
+  border-bottom: 1px outset rgba(112, 116, 116, 255);
+  border-right:  1px outset rgba(112, 116, 116, 255);
+  border-radius: 0px;
+  width: 12px;
+  margin-top: -4px;
+  margin-bottom: -4px;
+}
+
+QSlider::handle:pressed {
+  border: 1px outset rgba(123, 140, 156, 255);
+  background: #000;
+}
+
+QToolButton {
+  background: rgba(189, 206, 214, 255);
+  border-top:  1px outset rgba(189, 206, 214, 255);
+  border-left:   1px outset rgba(189, 206, 214, 255);
+  border-bottom: 1px outset rgba(112, 116, 116, 255);
+  border-right:  1px outset rgba(112, 116, 116, 255);
+}
+
+QToolButton:checked {
+  background: rgba(123, 140, 156, 255);
+  border-top:  1px inset rgba(112, 116, 116, 255);
+  border-left:   1px inset rgba(112, 116, 116, 255);
+  border-bottom: 1px inset rgba(123, 140, 156, 255);
+  border-right:  1px inset rgba(123, 140, 156, 255);
+}
+
+QToolButton:pressed {
+  background: rgba(123, 140, 156, 255);
+  border-top:  2px inset rgba(112, 116, 116, 255);
+  border-left:   2px inset rgba(112, 116, 116, 255);
+  border-bottom: 2px inset rgba(123, 140, 156, 255);
+  border-right:  2px inset rgba(123, 140, 156, 255);
+}

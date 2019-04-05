@@ -2,13 +2,16 @@
 
 StatusLabel::StatusLabel()
 {
-    QFont font("Monaco");
+    QFont font("PxPlus IBM CGA", 8);
+    font.setStyleStrategy(QFont::NoAntialias);
+    font.setHintingPreference(QFont::PreferNoHinting);
     font.setStyleHint(QFont::Monospace);
     setFont(font);
 
     setStyleSheet(
-      "background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(72, 72, 72, 255), stop:1 rgba(0, 0, 0, 255));\n"
-      "color: #ffff00;\n"
+      "background: rgba(0, 0, 0, 255);\n"
+      "color: #00ff00;\n"
+      "border: 1px inset #333;\n"
       "padding-left: .1em;\n"
       "padding-right: .1em;"
     );
