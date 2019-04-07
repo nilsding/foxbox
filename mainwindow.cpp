@@ -223,11 +223,8 @@ void MainWindow::on_qaMiniplayer_triggered(bool checked)
     {
         if (checked)
         {
+            ui->tableView->hide();
             targetObject->setMaximumHeight(targetObject->height());
-        }
-        else
-        {
-            ui->tableView->show();
         }
     });
 
@@ -235,16 +232,16 @@ void MainWindow::on_qaMiniplayer_triggered(bool checked)
     {
         previousHeight = targetObject->height();
         animation->setStartValue(QSize(targetObject->width(), previousHeight));
-        animation->setEndValue(QSize(targetObject->width(), ui->toolBar->height() + targetObject->minimumHeight()));
+        animation->setEndValue(QSize(targetObject->width(), targetObject->minimumHeight()));
     }
     else
     {
         targetObject->setMaximumHeight(targetObject->maximumWidth()); // maximumWidth is always max
         animation->setStartValue(QSize(targetObject->width(), targetObject->height()));
         animation->setEndValue(QSize(targetObject->width(), previousHeight));
+        ui->tableView->show();
     }
 
-    ui->tableView->hide();
     animation->start();
 }
 

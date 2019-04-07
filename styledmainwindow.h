@@ -6,6 +6,8 @@
 #include <QWidget>
 #include <QMouseEvent>
 #include <QMenu>
+#include <QSizeGrip>
+#include <QResizeEvent>
 
 #include "styledtitlebar.h"
 #include "mainwindow.h"
@@ -25,15 +27,20 @@ public slots:
     void onMinimizeClicked();
     void onCloseClicked();
 
+protected:
+    void resizeEvent(QResizeEvent* event);
+
 private:
     QMainWindow* _mainWindow;
     StyledTitleBar* _stb;
+    QSizeGrip* _sizeGrip;
     QMenu* _menu;
     QAction* _qaFoxbox;
 
     QPoint _dragPosition;
 
     void initializeComponents();
+    void moveSizeGrip();
 
 private slots:
     void onTitleBarMouseMoved(QMouseEvent* event);

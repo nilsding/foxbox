@@ -17,6 +17,7 @@ StyledMainWindow::StyledMainWindow(QWidget* parent) :
 void StyledMainWindow::installMainWindow(MainWindow* w)
 {
     _mainWindow = w;
+    setMinimumHeight(minimumHeight() + 37);
     centralWidget()->layout()->addWidget(_mainWindow);
 }
 
@@ -28,6 +29,11 @@ void StyledMainWindow::onMinimizeClicked()
 void StyledMainWindow::onCloseClicked()
 {
     close();
+}
+
+void StyledMainWindow::resizeEvent(QResizeEvent* /* event */)
+{
+    moveSizeGrip();
 }
 
 void StyledMainWindow::initializeComponents()
@@ -58,6 +64,21 @@ void StyledMainWindow::initializeComponents()
     _menu->addAction(_qaFoxbox);
     _menu->addSeparator();
     _stb->setMenu(_menu);
+
+    //=========================================================================
+    // size grip
+    _sizeGrip = new QSizeGrip(this);
+    _sizeGrip->setMaximumSize(16, 16);
+}
+
+void StyledMainWindow::moveSizeGrip()
+{
+    auto size = _sizeGrip->size();
+    QPoint targetPosition(
+        width() - size.width(),
+        height() - size.height()
+    );
+    _sizeGrip->move(targetPosition);
 }
 
 void StyledMainWindow::onTitleBarMouseMoved(QMouseEvent* event)
