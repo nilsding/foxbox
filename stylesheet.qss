@@ -54,3 +54,43 @@ QToolButton:pressed {
   border-bottom: 2px inset rgba(123, 140, 156, 255);
   border-right:  2px inset rgba(123, 140, 156, 255);
 }
+
+StyledTitleBar QPushButton {
+  background: none;
+  color: rgba(255, 255, 255, 63);
+  border: none;
+}
+
+StyledTitleBar QPushButton::menu-indicator {
+  image: none;
+  width: 0px;
+}
+
+StyledTitleBar QLabel {
+  margin: 2px 0px;
+}
+
+StyledTitleBar QPushButton:hover {
+  background: none;
+  color: rgba(255, 255, 255, 127);
+  border: none;
+}
+
+StyledTitleBar QPushButton:pressed {
+  color: rgba(255, 255, 255, 255);
+  border: none;
+}
+
+StyledTitleBar QWidget#spacer {
+  margin: 3px 0;
+  background: qlineargradient(spread:reflect, x1:0, y1:0, x2:0, y2:0.25, stop:0 rgba(0, 0, 0, 0), stop:1 rgba(255, 255, 0, 180));
+}
+
+StyledTitleBar QLabel:!active {
+  color: rgba(255, 255, 255, 127);
+}
+
+StyledTitleBar QWidget#spacer:!active {
+  margin: 3px 0;
+  background: qlineargradient(spread:reflect, x1:0, y1:0, x2:0, y2:0.25, stop:0 rgba(0, 0, 0, 0), stop:1 rgba(155, 155, 0, 180));
+}

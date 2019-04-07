@@ -6,6 +6,7 @@
 
 #include "nativefilters.h"
 #include "mainwindow.h"
+#include "styledmainwindow.h"
 
 int main(int argc, char *argv[])
 {
@@ -44,7 +45,9 @@ int main(int argc, char *argv[])
     a.installNativeEventFilter(&filter);
 #endif
 
+    StyledMainWindow sw;
     MainWindow w;
+    sw.installMainWindow(&w);
 
 #ifdef HAVE_NATIVE_FILTERS
     QObject::connect(&filter, &NativeFilter::mediaKeyDownPlay, &w, &MainWindow::onPlayPressed);
@@ -52,7 +55,7 @@ int main(int argc, char *argv[])
     QObject::connect(&filter, &NativeFilter::mediaKeyDownPrevious, &w, &MainWindow::onPreviousPressed);
 #endif
 
-    w.show();
+    sw.show();
 
     auto ret = a.exec();
 
