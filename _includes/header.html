@@ -5,7 +5,7 @@
 <nav class="nav">
   <ul>
     {% for entry in site.nav %}
-      <li><a href="{{ entry[1] }}">{{ entry[0] }}</a>
+      <li><a href="{{ entry[1] | prepend: site.baseurl }}">{{ entry[0] }}</a>
     {% endfor %}
   </ul>
 </nav>
