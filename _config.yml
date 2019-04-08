@@ -1,1 +1,9 @@
-theme: jekyll-theme-leap-day
+title: foxbox
+description: A Qt5 and libopenmpt-based player for tracker music 
+
+# main nav entries
+nav:
+  "Get foxbox": "/download"
+  "Get music": "/getmusic"
+  "Contribute": "/contribute"
+  "Home": "/"

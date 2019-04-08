@@ -1,0 +1,11 @@
+<div class="header">
+  <h1>{{ site.title }}</h1>
+  {{ site.description }}
+</div>
+<nav class="nav">
+  <ul>
+    {% for entry in site.nav %}
+      <li><a href="{{ entry[1] }}">{{ entry[0] }}</a>
+    {% endfor %}
+  </ul>
+</nav>
