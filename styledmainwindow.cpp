@@ -2,8 +2,13 @@
 
 #include <QToolBar>
 #include <QVBoxLayout>
+#include <QGuiApplication>
+#include <QScreen>
 
 #include "aboutdialog.h"
+
+//! Range of pixels the window should snap to the screen border
+#define SNAP_RANGE 10
 
 StyledMainWindow::StyledMainWindow(QWidget* parent) :
     QMainWindow(parent)
@@ -83,7 +88,28 @@ void StyledMainWindow::moveSizeGrip()
 
 void StyledMainWindow::onTitleBarMouseMoved(QMouseEvent* event)
 {
-    move(event->globalPos() - _dragPosition);
+    auto targetPos = event->globalPos() - _dragPosition;
+    // TODO: handle multi-monitor setups
+    auto screenSize = QGuiApplication::primaryScreen()->size();
+
+    if (qAbs(targetPos.x()) < SNAP_RANGE)
+    {
+        targetPos.setX(0);
+    }
+    if (qAbs(targetPos.y()) < SNAP_RANGE)
+    {
+        targetPos.setY(0);
+    }
+    if (qAbs(targetPos.x() + width() - screenSize.width()) < SNAP_RANGE)
+    {
+        targetPos.setX(screenSize.width() - width());
+    }
+    if (qAbs(targetPos.y() + height() - screenSize.height()) < SNAP_RANGE)
+    {
+        targetPos.setY(screenSize.height() - height());
+    }
+
+    move(targetPos);
 }
 
 void StyledMainWindow::onTitleBarMousePressed(QMouseEvent* event)
