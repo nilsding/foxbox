@@ -78,3 +78,21 @@ h1 {
   align-items: center;
   margin: 0 auto;
 }
+
+.item {
+  padding: 1rem;
+  padding-top: 1.5rem;
+
+  &-header {
+    padding: .3rem;
+    background: #edeed4;
+    border-top: 1px solid #000000;
+    border-bottom: 1px solid #000000;
+    font-weight: 600;
+    font-size: 105%;
+  }
+
+  &-body {
+    padding: 1rem;
+  }
+}
