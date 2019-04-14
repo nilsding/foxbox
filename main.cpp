@@ -1,6 +1,9 @@
 #include <QApplication>
 #include <QFontDatabase>
 #include <QStyleFactory>
+#include <QTranslator>
+#include <QLocale>
+#include <QLibraryInfo>
 
 #include <ao/ao.h>
 
@@ -17,6 +20,14 @@ int main(int argc, char *argv[])
     a.setApplicationVersion("0.1.0");
     a.setOrganizationName("nilsding");
     a.setOrganizationDomain("org.nilsding");
+
+    QTranslator qtTranslator;
+        qtTranslator.load("qt_" + QLocale::system().name(), QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    a.installTranslator(&qtTranslator);
+
+    QTranslator myappTranslator;
+    myappTranslator.load(":/i18n/" + QLocale::system().name());
+    a.installTranslator(&myappTranslator);
 
     a.setStyle(QStyleFactory::create("Fusion"));
     QPalette pal;
