@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->menuBar->setNativeMenuBar(true);
     ui->menuBar->hide();
 
-    slInfo->setFirstLine("foxbox 0.1.0");
+    slInfo->setFirstLine(QString("foxbox %1").arg(QApplication::instance()->applicationVersion()));
     slInfo->setSecondLine("Ready");
     ui->toolBar->insertSeparator(ui->qaLoop);
     ui->toolBar->insertWidget(ui->qaLoop, slInfo);

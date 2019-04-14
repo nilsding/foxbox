@@ -13,6 +13,10 @@ int main(int argc, char *argv[])
     ao_initialize();
 
     QApplication a(argc, argv);
+    a.setApplicationName("foxbox");
+    a.setApplicationVersion("0.1.0");
+    a.setOrganizationName("nilsding");
+    a.setOrganizationDomain("org.nilsding");
 
     a.setStyle(QStyleFactory::create("Fusion"));
     QPalette pal;

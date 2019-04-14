@@ -1,5 +1,6 @@
 #include "styledmainwindow.h"
 
+#include <QApplication>
 #include <QToolBar>
 #include <QVBoxLayout>
 #include <QGuiApplication>
@@ -72,7 +73,7 @@ void StyledMainWindow::initializeComponents()
     //=========================================================================
     // menu items
     _menu = new QMenu(this);
-    _qaFoxbox = new QAction("foxbox 0.1.0", _menu);
+    _qaFoxbox = new QAction(QString("foxbox %1").arg(QApplication::instance()->applicationVersion()), _menu);
     connect(_qaFoxbox, &QAction::triggered, this, &StyledMainWindow::onqaFoxboxTriggered);
     _menu->addAction(_qaFoxbox);
     _menu->addSeparator();

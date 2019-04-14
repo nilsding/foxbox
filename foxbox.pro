@@ -66,6 +66,9 @@ LIBS += \
 RESOURCES += \
     res.qrc
 
+win32:VERSION = 0.1.0.0
+else:VERSION = 0.1.0
+
 mac {
     OBJECTIVE_SOURCES += \
         nativefilters_mac.mm
