@@ -1,0 +1,17 @@
+---
+- header: About foxbox
+  body: |
+    foxbox is [nilsding]'s personal player for tracker music files, based on
+    [libopenmpt].  foxbox supports MOD, XM, IT, S3M, MPTM, and most other
+    module formats you can load in OpenMPT.  foxbox is still under development.
+    foxbox is also open source.  [Star foxbox on GitHub][github] now!
+
+    [nilsding]: https://nilsding.org
+    [libopenmpt]: https://lib.openmpt.org
+    [github]: https://github.com/nilsding/foxbox
+
+- header: foxbox 0.1.0
+  body: |
+    ![foxbox main window](https://raw.githubusercontent.com/nilsding/foxbox/master/screenshot.png)
+
+    Spicy.

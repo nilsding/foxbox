@@ -1,0 +1,20 @@
+---
+layout: default
+---
+{% capture page_name %}{{ page.name | replace: ".html", "" | replace: ".md", "" }}{% endcapture %}
+{% for item in site.data.pages[page_name] %}
+<div class="item">
+  {% if item.header %}
+  <div class="item-header">
+    {{ item.header }}
+  </div>
+  {% endif %}
+  {% if item.body %}
+  <div class="item-body">
+    {{ item.body | markdownify }}
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+
+{{ content }}

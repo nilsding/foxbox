@@ -1,5 +1,6 @@
 ---
-layout: default
+layout: item_page
+aside:
+- header: Advertisement
+  body: "¯\\\\_(ツ)\\_/¯"
 ---
-
-Contribute to foxbox

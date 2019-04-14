@@ -11,6 +11,24 @@
       <main class="site-content">
         {{ content }}
       </main>
+      {% if page.aside %}
+      <aside class="site-side">
+        {% for item in page.aside %}
+        <div class="side-item">
+          {% if item.header %}
+          <div class="side-item-header">
+            {{ item.header }}
+          </div>
+          {% endif %}
+          {% if item.body %}
+          <div class="side-item-body">
+            {{ item.body | markdownify }}
+          </div>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </aside>
+      {% endif %}
     </div>
     <footer class="site-footer">
       {% include footer.html %}
