@@ -24,11 +24,14 @@ MainWindow::MainWindow(QWidget *parent) :
 
     slInfo->setFirstLine("foxbox 0.1.0");
     slInfo->setSecondLine("Ready");
+    ui->toolBar->insertSeparator(ui->qaLoop);
     ui->toolBar->insertWidget(ui->qaLoop, slInfo);
+    ui->toolBar->insertSeparator(ui->qaLoop);
     qsVolume->setOrientation(Qt::Horizontal);
     qsVolume->setRange(0, 100);
     qsVolume->setValue(100);
     ui->toolBar->insertWidget(ui->qaLoop, qsVolume);
+    ui->toolBar->insertSeparator(ui->qaLoop);
 
     playlist->setParent(ui->tableView);
     ui->tableView->setModel(playlist);

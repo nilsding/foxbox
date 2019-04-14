@@ -55,6 +55,11 @@ QToolButton:pressed {
   border-right:  2px inset rgba(123, 140, 156, 255);
 }
 
+QToolBar::separator {
+  border: none;
+  width: 3px;
+}
+
 StyledTitleBar QPushButton {
   background: none;
   color: rgba(255, 255, 255, 63);
