@@ -16,6 +16,10 @@ QString AboutDialog::aboutText =
         "Greetings go out to: "
         "Mh, pixeldesu, coderobe, Fisk, seatsea, and all the others I forgot"
         SEPARATOR
+        "The font used throughout foxbox is called \"PxPlus IBM CGA\", which "
+        "was created by VileR in 2015/2016 and is provided under the CC BY-SA "
+        "4.0 licence.  https://int10h.org"
+        SEPARATOR
         "I hope you enjoy this fine piece of software ;-)";
 #undef SEPARATOR
 
@@ -59,9 +63,10 @@ void AboutDialog::paintEvent(QPaintEvent* /* event */)
 {
     QPainter painter(this);
 
-    QFont font("Monaco");
-    font.setStyleHint(QFont::Monospace);
-    font.setPixelSize(25);
+    QFont font("PxPlus IBM CGA", 16);
+    font.setStyle(QFont::StyleNormal);
+    font.setStyleStrategy(QFont::NoAntialias);
+    font.setHintingPreference(QFont::PreferNoHinting);
     painter.setFont(font);
 
     for (int i = 0; i < aboutText.size(); i++)
@@ -86,9 +91,10 @@ void AboutDialog::mousePressEvent(QMouseEvent* /*event*/)
 
 void AboutDialog::buildTextWidthTable()
 {
-    QFont font("Monaco");
-    font.setStyleHint(QFont::Monospace);
-    font.setPixelSize(25);
+    QFont font("PxPlus IBM CGA", 16);
+    font.setStyle(QFont::StyleNormal);
+    font.setStyleStrategy(QFont::NoAntialias);
+    font.setHintingPreference(QFont::PreferNoHinting);
     QFontMetricsF fontMetrics(font);
 
     _textWidthTable->clear();

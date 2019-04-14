@@ -6,5 +6,7 @@
         <file>res/player_start.png</file>
         <file>res/sound.png</file>
         <file>res/unknown.png</file>
+        <file>res/PxPlus_IBM_CGA.ttf</file>
+        <file>stylesheet.qss</file>
     </qresource>
 </RCC>

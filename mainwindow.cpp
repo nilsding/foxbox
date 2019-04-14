@@ -7,9 +7,9 @@
 #include <QMessageBox>
 #include <QPropertyAnimation>
 
-#include "aboutdialog.h"
 #include "m3uparser.h"
 #include "m3uwriter.h"
+#include "styledmainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -21,14 +21,19 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     setAcceptDrops(true);
     ui->setupUi(this);
+    ui->menuBar->setNativeMenuBar(true);
+    ui->menuBar->hide();
 
     slInfo->setFirstLine("foxbox 0.1.0");
     slInfo->setSecondLine("Ready");
+    ui->toolBar->insertSeparator(ui->qaLoop);
     ui->toolBar->insertWidget(ui->qaLoop, slInfo);
+    ui->toolBar->insertSeparator(ui->qaLoop);
     qsVolume->setOrientation(Qt::Horizontal);
     qsVolume->setRange(0, 100);
     qsVolume->setValue(100);
     ui->toolBar->insertWidget(ui->qaLoop, qsVolume);
+    ui->toolBar->insertSeparator(ui->qaLoop);
 
     playlist->setParent(ui->tableView);
     ui->tableView->setModel(playlist);
@@ -207,8 +212,15 @@ void MainWindow::on_qaSavePlaylist_triggered()
 
 void MainWindow::on_qaMiniplayer_triggered(bool checked)
 {
+    QMainWindow* targetObject = this;
+    if (parent() != nullptr)
+    {
+        // parent -> centralWidget of StyledMainWindow,
+        //  ` parent -> the actual StyledMainWindow
+        targetObject = reinterpret_cast<QMainWindow*>(parent()->parent());
+    }
     static int previousHeight = 320;
-    auto animation = new QPropertyAnimation(this, "size");
+    auto animation = new QPropertyAnimation(targetObject, "size");
     animation->setDuration(500);
     animation->setEasingCurve(QEasingCurve::InOutQuart);
 
@@ -216,38 +228,32 @@ void MainWindow::on_qaMiniplayer_triggered(bool checked)
     {
         if (checked)
         {
-            setMaximumHeight(height());
-        }
-        else
-        {
-            ui->tableView->show();
+            ui->tableView->hide();
+            targetObject->setMaximumHeight(targetObject->height());
         }
     });
 
     if (checked)
     {
-        previousHeight = height();
-        animation->setStartValue(QSize(width(), previousHeight));
-        animation->setEndValue(QSize(width(), ui->toolBar->height()));
+        previousHeight = targetObject->height();
+        animation->setStartValue(QSize(targetObject->width(), previousHeight));
+        animation->setEndValue(QSize(targetObject->width(), targetObject->minimumHeight()));
     }
     else
     {
-        setMaximumHeight(maximumWidth()); // maximumWidth is always max
-        animation->setStartValue(QSize(width(), height()));
-        animation->setEndValue(QSize(width(), previousHeight));
+        targetObject->setMaximumHeight(targetObject->maximumWidth()); // maximumWidth is always max
+        animation->setStartValue(QSize(targetObject->width(), targetObject->height()));
+        animation->setEndValue(QSize(targetObject->width(), previousHeight));
+        ui->tableView->show();
     }
 
-    ui->toolBar->setMovable(!checked);
-    ui->tableView->hide();
     animation->start();
 }
 
 void MainWindow::on_qaAboutFoxbox_triggered()
 {
-    auto ad = new AboutDialog(this);
-    ad->setModal(true);
-    ad->exec();
-    ad->deleteLater();
+    auto win = qobject_cast<StyledMainWindow*>(parent()->parent());
+    win->onqaFoxboxTriggered();
 }
 
 void MainWindow::on_qaAboutQt_triggered()

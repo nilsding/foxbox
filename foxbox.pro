@@ -33,7 +33,9 @@ SOURCES += \
     player.cpp \
     m3uparser.cpp \
     m3uwriter.cpp \
-    aboutdialog.cpp
+    aboutdialog.cpp \
+    styledmainwindow.cpp \
+    styledtitlebar.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -44,7 +46,9 @@ HEADERS += \
     m3uparser.h \
     m3uwriter.h \
     aboutdialog.h \
-    nativefilters.h
+    nativefilters.h \
+    styledmainwindow.h \
+    styledtitlebar.h
 
 FORMS += \
     mainwindow.ui

@@ -1,0 +1,119 @@
+QSlider::groove {
+  border: 1px inset #333;
+  height: 3px;
+  border-radius: 50%;
+}
+
+QSlider::sub-page {
+  border: 1px inset #000;
+  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(119, 160, 49, 255), stop:1 rgba(169, 227, 70, 255));
+}
+
+QSlider::add-page {
+  border: 1px inset #333;
+  background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 rgba(93, 93, 93, 255), stop:1 rgba(134, 137, 137, 255));
+}
+
+QSlider::handle {
+  background: rgba(189, 206, 214, 255);
+  border-top:  1px outset rgba(189, 206, 214, 255);
+  border-left:   1px outset rgba(189, 206, 214, 255);
+  border-bottom: 1px outset rgba(112, 116, 116, 255);
+  border-right:  1px outset rgba(112, 116, 116, 255);
+  border-radius: 0px;
+  width: 12px;
+  margin-top: -4px;
+  margin-bottom: -4px;
+}
+
+QSlider::handle:pressed {
+  border: 1px outset rgba(123, 140, 156, 255);
+  background: #000;
+}
+
+QToolButton {
+  background: rgba(189, 206, 214, 255);
+  border-top:  1px outset rgba(189, 206, 214, 255);
+  border-left:   1px outset rgba(189, 206, 214, 255);
+  border-bottom: 1px outset rgba(112, 116, 116, 255);
+  border-right:  1px outset rgba(112, 116, 116, 255);
+}
+
+QToolButton:checked {
+  background: rgba(123, 140, 156, 255);
+  border-top:  1px inset rgba(112, 116, 116, 255);
+  border-left:   1px inset rgba(112, 116, 116, 255);
+  border-bottom: 1px inset rgba(123, 140, 156, 255);
+  border-right:  1px inset rgba(123, 140, 156, 255);
+}
+
+QToolButton:pressed {
+  background: rgba(123, 140, 156, 255);
+  border-top:  2px inset rgba(112, 116, 116, 255);
+  border-left:   2px inset rgba(112, 116, 116, 255);
+  border-bottom: 2px inset rgba(123, 140, 156, 255);
+  border-right:  2px inset rgba(123, 140, 156, 255);
+}
+
+QToolBar::separator {
+  border: none;
+  width: 3px;
+}
+
+StyledTitleBar QPushButton {
+  background: none;
+  color: rgba(255, 255, 255, 63);
+  border: none;
+}
+
+StyledTitleBar QPushButton::menu-indicator {
+  image: none;
+  width: 0px;
+}
+
+StyledTitleBar QLabel {
+  margin: 2px 0px;
+}
+
+StyledTitleBar QPushButton:hover {
+  background: none;
+  color: rgba(255, 255, 255, 127);
+  border: none;
+}
+
+StyledTitleBar QPushButton:pressed {
+  color: rgba(255, 255, 255, 255);
+  border: none;
+}
+
+StyledTitleBar QWidget#spacer {
+  margin: 3px 0;
+  background: qlineargradient(spread:reflect, x1:0, y1:0, x2:0, y2:0.25, stop:0 rgba(0, 0, 0, 0), stop:1 rgba(255, 255, 0, 180));
+}
+
+StyledTitleBar QLabel:!active {
+  color: rgba(255, 255, 255, 127);
+}
+
+StyledTitleBar QWidget#spacer:!active {
+  margin: 3px 0;
+  background: qlineargradient(spread:reflect, x1:0, y1:0, x2:0, y2:0.25, stop:0 rgba(0, 0, 0, 0), stop:1 rgba(155, 155, 0, 180));
+}
+
+QMenu {
+  background: rgba(189, 206, 214, 255);
+  color: rgba(47, 55, 47, 255);
+}
+
+QMenu::item:selected {
+  background: #00007f;
+  color: #ffffff;
+}
+
+QMenuBar {
+  color: #ffffff;
+}
+
+QMenuBar:selected {
+  background: #00007f;
+}

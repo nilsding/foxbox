@@ -48,11 +48,11 @@ QVariant Playlist::data(const QModelIndex &index, int role) const
         }
         break;
     }
-    case Qt::BackgroundRole: {
+    case Qt::ForegroundRole: {
         if (index.row() == _currentIndex)
         {
             QPalette pal;
-            return pal.brush(QPalette::Highlight);
+            return pal.brush(QPalette::BrightText);
         }
         break;
     }
