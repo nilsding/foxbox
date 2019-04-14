@@ -30,7 +30,7 @@ AboutDialog::AboutDialog(QWidget* parent) :
 {
     // setup ui
     resize(580, 160);
-    setWindowTitle("About foxbox");
+    setWindowTitle(tr("About foxbox"));
     setStyleSheet(
       "background: qlineargradient(spread:pad, x1:0, y1:0, x2:1, y2:1, stop:0 rgba(72, 72, 72, 255), stop:1 rgba(0, 0, 0, 255));"
       "color: #ffff00;"

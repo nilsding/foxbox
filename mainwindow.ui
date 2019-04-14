@@ -17,7 +17,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>🦊📦</string>
+   <string notr="true">foxbox</string>
   </property>
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>false</bool>

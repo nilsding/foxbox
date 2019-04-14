@@ -75,8 +75,8 @@ QVariant Playlist::headerData(int section, Qt::Orientation orientation, int role
 
     switch (section)
     {
-    case 0: return QVariant("Name");
-    case 1: return QVariant("Path");
+    case 0: return QVariant(tr("Name"));
+    case 1: return QVariant(tr("Path"));
     }
 
     return QVariant::Invalid;

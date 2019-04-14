@@ -25,6 +25,7 @@ void StyledMainWindow::installMainWindow(MainWindow* w)
 {
     _mainWindow = w;
     setMinimumHeight(minimumHeight() + 37);
+    setWindowTitle(_mainWindow->windowTitle());
     centralWidget()->layout()->addWidget(_mainWindow);
     auto menuBar = w->menuBar();
     auto entries = menuBar->findChildren<QMenu*>();
@@ -65,6 +66,7 @@ void StyledMainWindow::initializeComponents()
     _stb = new StyledTitleBar("foxbox", this);
     layout->addWidget(_stb);
 
+    connect(this, &StyledMainWindow::windowTitleChanged, _stb, &StyledTitleBar::setTitle);
     connect(_stb, &StyledTitleBar::minimizeClicked, this, &StyledMainWindow::onMinimizeClicked);
     connect(_stb, &StyledTitleBar::closeClicked, this, &StyledMainWindow::onCloseClicked);
     connect(_stb, &StyledTitleBar::mouseMoved, this, &StyledMainWindow::onTitleBarMouseMoved);
@@ -136,10 +138,10 @@ void StyledMainWindow::onqaFoxboxTriggered()
 
     auto ad = new AboutDialog(this);
     connect(ad, &AboutDialog::accepted, this, [&] {
-        _stb->setTitle("foxbox");
+        setWindowTitle(_mainWindow->windowTitle());
         _mainWindow->show();
     });
-    _stb->setTitle("About foxbox");
+    setWindowTitle(ad->windowTitle());
     _mainWindow->hide();
     centralWidget()->layout()->addWidget(ad);
 }

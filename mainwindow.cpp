@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->menuBar->hide();
 
     slInfo->setFirstLine(QString("foxbox %1").arg(QApplication::instance()->applicationVersion()));
-    slInfo->setSecondLine("Ready");
+    slInfo->setSecondLine(tr("Ready"));
     ui->toolBar->insertSeparator(ui->qaLoop);
     ui->toolBar->insertWidget(ui->qaLoop, slInfo);
     ui->toolBar->insertSeparator(ui->qaLoop);
@@ -277,19 +277,19 @@ void MainWindow::onSongChange(QString songName)
 
 void MainWindow::onRowUpdate(int row, int pattern, int channels)
 {
-    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2, %3 channels").arg(QString::number(pattern), QString::number(row), QString::number(channels)));
+    slInfo->setSecondLine(tr("Playing, Pattern %1, Row %2, %3 channels").arg(QString::number(pattern), QString::number(row), QString::number(channels)));
 }
 
 void MainWindow::onPlaybackStarted()
 {
     ui->qaPlayPause->setIcon(QIcon(":/res/player_pause.png"));
-    slInfo->setSecondLine("Playing");
+    slInfo->setSecondLine(tr("Playing"));
 }
 
 void MainWindow::onPlaybackPaused()
 {
     ui->qaPlayPause->setIcon(QIcon(":/res/1rightarrow.png"));
-    slInfo->setSecondLine("Ready");
+    slInfo->setSecondLine(tr("Ready"));
 }
 
 void MainWindow::loadPlaylistFromFile(const QString& playlistPath)
