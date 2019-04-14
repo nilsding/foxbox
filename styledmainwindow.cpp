@@ -4,6 +4,7 @@
 #include <QVBoxLayout>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QMenuBar>
 
 #include "aboutdialog.h"
 
@@ -24,6 +25,13 @@ void StyledMainWindow::installMainWindow(MainWindow* w)
     _mainWindow = w;
     setMinimumHeight(minimumHeight() + 37);
     centralWidget()->layout()->addWidget(_mainWindow);
+    auto menuBar = w->menuBar();
+    auto entries = menuBar->findChildren<QMenu*>();
+
+    for (auto &entry : entries)
+    {
+        _menu->addMenu(entry);
+    }
 }
 
 void StyledMainWindow::onMinimizeClicked()

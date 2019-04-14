@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     setAcceptDrops(true);
     ui->setupUi(this);
+    ui->menuBar->setNativeMenuBar(true);
+    ui->menuBar->hide();
 
     slInfo->setFirstLine("foxbox 0.1.0");
     slInfo->setSecondLine("Ready");

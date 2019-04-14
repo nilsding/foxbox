@@ -99,3 +99,21 @@ StyledTitleBar QWidget#spacer:!active {
   margin: 3px 0;
   background: qlineargradient(spread:reflect, x1:0, y1:0, x2:0, y2:0.25, stop:0 rgba(0, 0, 0, 0), stop:1 rgba(155, 155, 0, 180));
 }
+
+QMenu {
+  background: rgba(189, 206, 214, 255);
+  color: rgba(47, 55, 47, 255);
+}
+
+QMenu::item:selected {
+  background: #00007f;
+  color: #ffffff;
+}
+
+QMenuBar {
+  color: #ffffff;
+}
+
+QMenuBar:selected {
+  background: #00007f;
+}
