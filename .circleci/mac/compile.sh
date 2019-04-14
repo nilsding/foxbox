@@ -1,7 +1,8 @@
 #!/bin/sh
 
-. ./.travis/common.subr
+. ./.circleci/common.subr
 
+export PATH="/usr/local/opt/qt/bin:$PATH"
 qmake --version
 
 mkdir -p build

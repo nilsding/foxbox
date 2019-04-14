@@ -1,0 +1,38 @@
+---
+version: 2.1
+
+commands:
+  build_foxbox:
+    description: "Build foxbox for a given platform"
+    parameters:
+      platform:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Install dependencies"
+          command: "./.circleci/install.sh << parameters.platform >>"
+      - run:
+          name: "Build foxbox"
+          command: "./.circleci/compile.sh << parameters.platform >>"
+
+jobs:
+  build_mac:
+    macos:
+      xcode: "10.2.0"
+    steps:
+      - build_foxbox:
+          platform: "mac"
+  build_linux:
+    docker:
+      - image: "ubuntu:18.04"
+    steps:
+      - build_foxbox:
+          platform: "linux"
+
+workflows:
+  version: 2.1
+  build_all:
+    jobs:
+      - build_mac
+      - build_linux

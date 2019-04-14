@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. ./.travis/common.subr
+. ./.circleci/common.subr
 
 print_msg green "Installing build-time dependencies"
 forcecmd brew install qt libao

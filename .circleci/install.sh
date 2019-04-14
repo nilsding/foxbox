@@ -1,16 +1,16 @@
 #!/bin/sh
 
-. ./.travis/common.subr
+. ./.circleci/common.subr
 
 export OPENMPT_COMMIT=565602b7fde099344ea9145ea855c3072636e8b7
 export OPENMPT_MAKEARGS="EXAMPLES=0 OPENMPT123=0 TEST=0"
 
-case "$TRAVIS_OS_NAME" in
-    osx|linux)
-        exec ./.travis/$TRAVIS_OS_NAME/install.sh
+case "$1" in
+    mac|linux)
+        exec ./.circleci/$1/install.sh
     ;;
     *)
-        print_msg red "unsupported OS $TRAVIS_OS_NAME"
+        print_msg red "unsupported OS $1"
         exit 1
     ;;
 esac
