@@ -35,7 +35,8 @@ SOURCES += \
     m3uwriter.cpp \
     aboutdialog.cpp \
     styledmainwindow.cpp \
-    styledtitlebar.cpp
+    styledtitlebar.cpp \
+    songinfowindow.cpp
 
 HEADERS += \
     mainwindow.h \
@@ -48,7 +49,8 @@ HEADERS += \
     aboutdialog.h \
     nativefilters.h \
     styledmainwindow.h \
-    styledtitlebar.h
+    styledtitlebar.h \
+    songinfowindow.h
 
 FORMS += \
     mainwindow.ui

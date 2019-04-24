@@ -51,6 +51,7 @@ private slots:
     void on_qaMiniplayer_triggered(bool checked);
     void on_qaAboutFoxbox_triggered();
     void on_qaAboutQt_triggered();
+    void on_qaSongInformation_triggered();
     void on_tableView_doubleClicked(const QModelIndex& index);
 
     void onSongChange(QString songName);

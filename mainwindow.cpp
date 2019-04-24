@@ -10,6 +10,7 @@
 #include "m3uparser.h"
 #include "m3uwriter.h"
 #include "styledmainwindow.h"
+#include "songinfowindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -259,6 +260,17 @@ void MainWindow::on_qaAboutFoxbox_triggered()
 void MainWindow::on_qaAboutQt_triggered()
 {
     QMessageBox::aboutQt(this);
+}
+
+void MainWindow::on_qaSongInformation_triggered()
+{
+    auto song = playlist->currentSong();
+    if (song == nullptr)
+    {
+        return;
+    }
+
+    (new SongInfoWindow(song))->show();
 }
 
 void MainWindow::on_tableView_doubleClicked(const QModelIndex& index)
