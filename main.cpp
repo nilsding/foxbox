@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
 
     QFontDatabase::addApplicationFont(":/res/PxPlus_IBM_CGA.ttf");
     QFont font("PxPlus IBM CGA", 8);
+    font.setPixelSize(8);
     font.setStyle(QFont::StyleNormal);
     font.setStyleStrategy(QFont::NoAntialias);
     font.setHintingPreference(QFont::PreferNoHinting);

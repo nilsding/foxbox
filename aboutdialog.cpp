@@ -64,6 +64,7 @@ void AboutDialog::paintEvent(QPaintEvent* /* event */)
     QPainter painter(this);
 
     QFont font("PxPlus IBM CGA", 16);
+    font.setPixelSize(16);
     font.setStyle(QFont::StyleNormal);
     font.setStyleStrategy(QFont::NoAntialias);
     font.setHintingPreference(QFont::PreferNoHinting);
@@ -92,6 +93,7 @@ void AboutDialog::mousePressEvent(QMouseEvent* /*event*/)
 void AboutDialog::buildTextWidthTable()
 {
     QFont font("PxPlus IBM CGA", 16);
+    font.setPixelSize(16);
     font.setStyle(QFont::StyleNormal);
     font.setStyleStrategy(QFont::NoAntialias);
     font.setHintingPreference(QFont::PreferNoHinting);
