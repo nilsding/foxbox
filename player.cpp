@@ -6,6 +6,7 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QIODevice>
+#include <QThread>
 
 QMutex Player::mutex;
 
@@ -17,11 +18,20 @@ Player::Player(Playlist* playlist, QObject *parent) :
 }
 
 #define FRAME_SIZE 2
+#ifdef Q_OS_MAC
+// For some reason I am too lazy to debug now either libopenmpt or QtMultimedia
+// on macOS does not want to deal with float sample types ...
+#define SAMPLE_CORE_TYPE int16_t
+#define SAMPLE_TYPE QAudioFormat::SignedInt
+#else
+#define SAMPLE_CORE_TYPE float
+#define SAMPLE_TYPE QAudioFormat::Float
+#endif
 
 void Player::play()
 {
     auto currentIndex = _playlist->currentIndex();
-    QByteArray buf(FRAME_SIZE * sizeof(float) * 2, 0x00); // frame size * float byte size * 2 (channels)
+    QByteArray buf(FRAME_SIZE * sizeof(SAMPLE_CORE_TYPE) * 2, 0x00); // frame size * byte size * 2 (channels)
 
     if (_playlist->rowCount() == 0)
     {
@@ -38,7 +48,7 @@ void Player::play()
     sampleFormat.setChannelCount(2);
     sampleFormat.setCodec("audio/pcm");
     sampleFormat.setByteOrder(QAudioFormat::LittleEndian);
-    sampleFormat.setSampleType(QAudioFormat::Float);
+    sampleFormat.setSampleType(SAMPLE_TYPE);
 
     QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
     if (!info.isFormatSupported(sampleFormat))
@@ -79,7 +89,7 @@ void Player::play()
             currentIndex = _playlist->currentIndex();
         }
 
-        auto read = song->_mod->read_interleaved_stereo(48000, FRAME_SIZE, reinterpret_cast<float*>(buf.data()));
+        auto read = song->_mod->read_interleaved_stereo(48000, FRAME_SIZE, reinterpret_cast<SAMPLE_CORE_TYPE*>(buf.data()));
         if (read == 0)
         {
             // when module ctl `play.at_end` is set to continue, at the end of the
@@ -117,9 +127,13 @@ void Player::play()
             _pattern = pattern;
         }
 
-        output->write(buf, static_cast<qint64>(read * sizeof(float) * 2));
+        output->write(buf, static_cast<qint64>(read * sizeof(SAMPLE_CORE_TYPE) * 2));
         // wait until audio output needs more data
-        while (_audioOutput->bytesFree() < _audioOutput->periodSize()) {};
+        while (_audioOutput->bytesFree() < _audioOutput->periodSize())
+        {
+            // Do not eat up all CPU time while waiting
+            QThread::msleep(15);
+        };
         mutex.unlock();
     }
     song->_mod->ctl_set("play.at_end", "stop");
