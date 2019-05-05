@@ -1,7 +1,6 @@
 #include "player.h"
 
 #include <QApplication>
-#include <cmath>
 #include <QAudioFormat>
 #include <QAudioDeviceInfo>
 #include <QByteArray>
@@ -17,12 +16,12 @@ Player::Player(Playlist* playlist, QObject *parent) :
     connect(playlist, &Playlist::currentIndexChanged, this, &Player::onCurrentIndexChanged);
 }
 
-#define BUFFER_SIZE 2
+#define FRAME_SIZE 2
 
 void Player::play()
 {
     auto currentIndex = _playlist->currentIndex();
-    QByteArray buf(BUFFER_SIZE * 2 * 2, 0x00); // frame size * 2 (bytes for uint16) * 2 (channels)
+    QByteArray buf(FRAME_SIZE * sizeof(float) * 2, 0x00); // frame size * float byte size * 2 (channels)
 
     if (_playlist->rowCount() == 0)
     {
@@ -35,16 +34,16 @@ void Player::play()
 
     QAudioFormat sampleFormat;
     sampleFormat.setSampleSize(16);
-    sampleFormat.setSampleRate(48000); // 48000 / 2
+    sampleFormat.setSampleRate(48000);
     sampleFormat.setChannelCount(2);
     sampleFormat.setCodec("audio/pcm");
     sampleFormat.setByteOrder(QAudioFormat::LittleEndian);
-    sampleFormat.setSampleType(QAudioFormat::SignedInt);
+    sampleFormat.setSampleType(QAudioFormat::Float);
 
     QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
     if (!info.isFormatSupported(sampleFormat))
     {
-      qWarning() << "Raw audio format not supported by backend, using nearest supported format.";
+      qWarning() << "Selected audio format is not supported by the default output device, using nearest supported format.";
       sampleFormat = info.nearestFormat(sampleFormat);
     }
 
@@ -52,6 +51,9 @@ void Player::play()
     {
       _audioOutput = new QAudioOutput(sampleFormat, nullptr);
     }
+
+    _audioOutput->setCategory("music");
+    _audioOutput->setVolume(_volume);
 
     QIODevice *output = _audioOutput->start();
 
@@ -77,7 +79,7 @@ void Player::play()
             currentIndex = _playlist->currentIndex();
         }
 
-        auto read = song->_mod->read_interleaved_stereo(48000, BUFFER_SIZE, reinterpret_cast<int16_t *>(buf.data()));
+        auto read = song->_mod->read_interleaved_stereo(48000, FRAME_SIZE, reinterpret_cast<float*>(buf.data()));
         if (read == 0)
         {
             // when module ctl `play.at_end` is set to continue, at the end of the
@@ -115,15 +117,7 @@ void Player::play()
             _pattern = pattern;
         }
 
-        if (_volume < 1.0)
-        {
-            for (int i = 0; i < read * 2; i++)
-            {
-                buf[i] = static_cast<int16_t>(buf[i] * _volume);
-            }
-        }
-
-        output->write(buf, read * 2 * 2);
+        output->write(buf, static_cast<qint64>(read * sizeof(float) * 2));
         // wait until audio output needs more data
         while (_audioOutput->bytesFree() < _audioOutput->periodSize()) {};
         mutex.unlock();
@@ -189,7 +183,15 @@ void Player::previousTrack()
 
 void Player::setVolume(int volume)
 {
-    _volume = std::pow(volume / 100.0, M_E);
+    if (_audioOutput == nullptr)
+    {
+        return;
+    }
+
+    _volume = QAudio::convertVolume(volume / qreal(100.0),
+                                    QAudio::LinearVolumeScale,
+                                    QAudio::LogarithmicVolumeScale);
+    _audioOutput->setVolume(_volume);
 }
 
 void Player::setLoop(bool loop)
