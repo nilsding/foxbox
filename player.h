@@ -4,7 +4,7 @@
 #include <QObject>
 #include <QMutex>
 
-#include <ao/ao.h>
+#include <QAudioOutput>
 
 #include "playlist.h"
 
@@ -42,13 +42,12 @@ private:
     bool _playing = false;
     bool _loop = false;
 
-    int _ao_driver_id = -1;
-    ao_device* _ao_device = nullptr;
+    QAudioOutput* _audioOutput = nullptr;
 
     int _row = 0;
     int _pattern = 0;
 
-    double _volume = 1.0;
+    qreal _volume = 1.0;
 };
 
 #endif // PLAYER_H

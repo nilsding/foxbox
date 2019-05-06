@@ -8,7 +8,7 @@ personal player for tracked music using libopenmpt as backend
 
 ## Build requirements
 
-- libao
+- QtMultimedia
 - libopenmpt (NOT libmodplug!)
 - Qt 5.12+
 

@@ -2,16 +2,12 @@
 #include <QFontDatabase>
 #include <QStyleFactory>
 
-#include <ao/ao.h>
-
 #include "nativefilters.h"
 #include "mainwindow.h"
 #include "styledmainwindow.h"
 
 int main(int argc, char *argv[])
 {
-    ao_initialize();
-
     QApplication a(argc, argv);
     a.setApplicationName("foxbox");
     a.setApplicationVersion("0.1.0");
@@ -63,8 +59,6 @@ int main(int argc, char *argv[])
     sw.show();
 
     auto ret = a.exec();
-
-    ao_shutdown();
 
     return ret;
 }

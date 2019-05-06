@@ -1,7 +1,12 @@
 #include "player.h"
 
 #include <QApplication>
-#include <cmath>
+#include <QAudioFormat>
+#include <QAudioDeviceInfo>
+#include <QByteArray>
+#include <QDebug>
+#include <QIODevice>
+#include <QThread>
 
 QMutex Player::mutex;
 
@@ -9,16 +14,24 @@ Player::Player(Playlist* playlist, QObject *parent) :
     QObject(parent),
     _playlist(playlist)
 {
-    _ao_driver_id = ao_default_driver_id();
     connect(playlist, &Playlist::currentIndexChanged, this, &Player::onCurrentIndexChanged);
 }
 
-#define BUFFER_SIZE 2
+#define FRAME_SIZE 2
+#ifdef Q_OS_MAC
+// For some reason I am too lazy to debug now either libopenmpt or QtMultimedia
+// on macOS does not want to deal with float sample types ...
+#define SAMPLE_CORE_TYPE int16_t
+#define SAMPLE_TYPE QAudioFormat::SignedInt
+#else
+#define SAMPLE_CORE_TYPE float
+#define SAMPLE_TYPE QAudioFormat::Float
+#endif
 
 void Player::play()
 {
     auto currentIndex = _playlist->currentIndex();
-    int16_t buf[BUFFER_SIZE * 2] = { 0x00 };
+    QByteArray buf(FRAME_SIZE * sizeof(SAMPLE_CORE_TYPE) * 2, 0x00); // frame size * byte size * 2 (channels)
 
     if (_playlist->rowCount() == 0)
     {
@@ -29,14 +42,30 @@ void Player::play()
     song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
     emit(songChange(song->songName()));
 
-    ao_sample_format sample_format;
-    sample_format.bits = 16;
-    sample_format.rate = 24000; // 48000 / 2
-    sample_format.channels = 2;
-    sample_format.byte_format = AO_FMT_NATIVE;
-    sample_format.matrix = nullptr;
+    QAudioFormat sampleFormat;
+    sampleFormat.setSampleSize(16);
+    sampleFormat.setSampleRate(48000);
+    sampleFormat.setChannelCount(2);
+    sampleFormat.setCodec("audio/pcm");
+    sampleFormat.setByteOrder(QAudioFormat::LittleEndian);
+    sampleFormat.setSampleType(SAMPLE_TYPE);
 
-    _ao_device = ao_open_live(_ao_driver_id, &sample_format, nullptr);
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (!info.isFormatSupported(sampleFormat))
+    {
+      qWarning() << "Selected audio format is not supported by the default output device, using nearest supported format.";
+      sampleFormat = info.nearestFormat(sampleFormat);
+    }
+
+    if (_audioOutput == nullptr)
+    {
+      _audioOutput = new QAudioOutput(sampleFormat, nullptr);
+    }
+
+    _audioOutput->setCategory("music");
+    _audioOutput->setVolume(_volume);
+
+    QIODevice *output = _audioOutput->start();
 
     _playing = true;
     emit(playbackStarted());
@@ -60,7 +89,7 @@ void Player::play()
             currentIndex = _playlist->currentIndex();
         }
 
-        auto read = song->_mod->read_interleaved_stereo(48000, BUFFER_SIZE, buf);
+        auto read = song->_mod->read_interleaved_stereo(48000, FRAME_SIZE, reinterpret_cast<SAMPLE_CORE_TYPE*>(buf.data()));
         if (read == 0)
         {
             // when module ctl `play.at_end` is set to continue, at the end of the
@@ -98,21 +127,21 @@ void Player::play()
             _pattern = pattern;
         }
 
-        if (_volume < 1.0)
+        output->write(buf, static_cast<qint64>(read * sizeof(SAMPLE_CORE_TYPE) * 2));
+        // wait until audio output needs more data
+        while (_audioOutput->bytesFree() < _audioOutput->periodSize())
         {
-            for (int i = 0; i < BUFFER_SIZE * 2; i++)
-            {
-                buf[i] = static_cast<int16_t>(buf[i] * _volume);
-            }
-        }
-
-        ao_play(_ao_device, reinterpret_cast<char*>(buf), static_cast<uint32_t>(read * 2));
+            // Do not eat up all CPU time while waiting
+            QThread::msleep(15);
+        };
         mutex.unlock();
     }
     song->_mod->ctl_set("play.at_end", "stop");
     emit(playbackPaused());
 
-    ao_close(_ao_device);
+    _audioOutput->stop();
+    _audioOutput->deleteLater();
+    _audioOutput = nullptr;
 }
 
 void Player::pause()
@@ -168,7 +197,15 @@ void Player::previousTrack()
 
 void Player::setVolume(int volume)
 {
-    _volume = std::pow(volume / 100.0, M_E);
+    if (_audioOutput == nullptr)
+    {
+        return;
+    }
+
+    _volume = QAudio::convertVolume(volume / qreal(100.0),
+                                    QAudio::LinearVolumeScale,
+                                    QAudio::LogarithmicVolumeScale);
+    _audioOutput->setVolume(_volume);
 }
 
 void Player::setLoop(bool loop)
