@@ -24,7 +24,7 @@ StyledMainWindow::StyledMainWindow(QWidget* parent) :
 void StyledMainWindow::installMainWindow(MainWindow* w)
 {
     _mainWindow = w;
-    setMinimumHeight(minimumHeight() + 37);
+    setMinimumHeight(minimumHeight() + _mainWindow->minimumHeight() + 5);
     centralWidget()->layout()->addWidget(_mainWindow);
     auto menuBar = w->menuBar();
     auto entries = menuBar->findChildren<QMenu*>();
@@ -69,6 +69,7 @@ void StyledMainWindow::initializeComponents()
     connect(_stb, &StyledTitleBar::closeClicked, this, &StyledMainWindow::onCloseClicked);
     connect(_stb, &StyledTitleBar::mouseMoved, this, &StyledMainWindow::onTitleBarMouseMoved);
     connect(_stb, &StyledTitleBar::mousePressed, this, &StyledMainWindow::onTitleBarMousePressed);
+    setMinimumHeight(_stb->height());
 
     //=========================================================================
     // menu items

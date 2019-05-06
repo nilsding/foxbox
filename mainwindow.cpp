@@ -34,6 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     qsVolume->setValue(100);
     ui->toolBar->insertWidget(ui->qaLoop, qsVolume);
     ui->toolBar->insertSeparator(ui->qaLoop);
+    setMinimumHeight(ui->toolBar->height());
 
     playlist->setParent(ui->tableView);
     ui->tableView->setModel(playlist);
