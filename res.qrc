@@ -8,5 +8,11 @@
         <file>res/unknown.png</file>
         <file>res/PxPlus_IBM_CGA.ttf</file>
         <file>stylesheet.qss</file>
+        <file>res/close.png</file>
+        <file>res/normal.png</file>
+        <file>res/titlebar.png</file>
+        <file>res/resize.png</file>
+        <file>res/scrollh.png</file>
+        <file>res/scrollv.png</file>
     </qresource>
 </RCC>

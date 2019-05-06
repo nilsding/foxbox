@@ -12,6 +12,7 @@ StyledTitleBar::StyledTitleBar(const QString& title, QWidget* parent) :
     _title(title)
 {
     setContentsMargins(5, 0, 5, 0);
+    setCursor(QCursor(QPixmap(":/res/titlebar.png"), 0, 0));
 
     setMinimumHeight(12);
     setMaximumHeight(12);
@@ -22,9 +23,12 @@ StyledTitleBar::StyledTitleBar(const QString& title, QWidget* parent) :
     setLayout(layout);
 
     _qpbMenu = new QPushButton("", this);
+    _qpbMenu->setCursor(QCursor(QPixmap(":/res/normal.png"), 0, 0));
     _qpbMinimize = new QPushButton("-", this);
+    _qpbMinimize->setCursor(QCursor(QPixmap(":/res/normal.png"), 0, 0));
     connect(_qpbMinimize, &QPushButton::clicked, this, &StyledTitleBar::onMinimizeClicked);
     _qpbClose = new QPushButton("×", this);
+    _qpbClose->setCursor(QCursor(QPixmap(":/res/close.png"), 0, 0));
     connect(_qpbClose, &QPushButton::clicked, this, &StyledTitleBar::onCloseClicked);
 
     layout->addWidget(_qpbMenu);

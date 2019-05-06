@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent) :
     qsVolume->setOrientation(Qt::Horizontal);
     qsVolume->setRange(0, 100);
     qsVolume->setValue(100);
+    qsVolume->setCursor(QCursor(QPixmap(":/res/scrollh.png"), 0, 0));
     ui->toolBar->insertWidget(ui->qaLoop, qsVolume);
     ui->toolBar->insertSeparator(ui->qaLoop);
     setMinimumHeight(ui->toolBar->height());

@@ -60,6 +60,8 @@ void StyledMainWindow::initializeComponents()
     this->setCentralWidget(new QWidget(this));
     centralWidget()->setLayout(layout);
 
+    setCursor(QCursor(QPixmap(":/res/normal.png"), 0, 0));
+
     //=========================================================================
     // title bar
     _stb = new StyledTitleBar("foxbox", this);
@@ -78,6 +80,7 @@ void StyledMainWindow::initializeComponents()
     connect(_qaFoxbox, &QAction::triggered, this, &StyledMainWindow::onqaFoxboxTriggered);
     _menu->addAction(_qaFoxbox);
     _menu->addSeparator();
+    _menu->setCursor(QCursor(QPixmap(":/res/normal.png"), 0, 0));
     _stb->setMenu(_menu);
 
     //=========================================================================
