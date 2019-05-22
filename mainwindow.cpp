@@ -17,7 +17,8 @@ MainWindow::MainWindow(QWidget *parent) :
     slInfo(new StatusLabel),
     qsVolume(new QSlider),
     playlist(new Playlist),
-    player(new Player(playlist))
+    player(new Player(playlist)),
+    qtStatusUpdate(new QTimer)
 {
     setAcceptDrops(true);
     ui->setupUi(this);
@@ -55,16 +56,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->qaNext, &QAction::triggered, this, &MainWindow::onNextPressed);
     connect(ui->qaPrevious, &QAction::triggered, this, &MainWindow::onPreviousPressed);
     connect(player, &Player::songChange, this, &MainWindow::onSongChange);
-    connect(player, &Player::rowUpdate, this, &MainWindow::onRowUpdate);
     connect(player, &Player::playbackStarted, this, &MainWindow::onPlaybackStarted);
     connect(player, &Player::playbackPaused, this, &MainWindow::onPlaybackPaused);
     playbackThread.start();
+
+    qtStatusUpdate->setInterval(10);
+    connect(qtStatusUpdate, &QTimer::timeout, this, &MainWindow::updateStatusBar);
 }
 
 MainWindow::~MainWindow()
 {
     playbackThread.quit();
 
+    delete qtStatusUpdate;
     delete player;
     delete playlist;
     delete qsVolume;
@@ -277,21 +281,27 @@ void MainWindow::onSongChange(QString songName)
     slInfo->setFirstLine(songName);
 }
 
-void MainWindow::onRowUpdate(int row, int pattern, int channels)
-{
-    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2, %3 channels").arg(QString::number(pattern), QString::number(row), QString::number(channels)));
-}
-
 void MainWindow::onPlaybackStarted()
 {
     ui->qaPlayPause->setIcon(QIcon(":/res/player_pause.png"));
     slInfo->setSecondLine("Playing");
+    qtStatusUpdate->start();
 }
 
 void MainWindow::onPlaybackPaused()
 {
     ui->qaPlayPause->setIcon(QIcon(":/res/1rightarrow.png"));
     slInfo->setSecondLine("Ready");
+    qtStatusUpdate->stop();
+}
+
+void MainWindow::updateStatusBar()
+{
+    auto info = player->currentTimeInfo();
+    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2, %3 channels")
+                          .arg(QString::number(info.pattern),
+                               QString::number(info.row),
+                               QString::number(info.channels)));
 }
 
 void MainWindow::loadPlaylistFromFile(const QString& playlistPath)

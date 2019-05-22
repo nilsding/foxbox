@@ -10,6 +10,7 @@
 #include <QDropEvent>
 #include <QThread>
 #include <QSlider>
+#include <QTimer>
 
 #include "player.h"
 #include "playlist.h"
@@ -54,9 +55,9 @@ private slots:
     void on_tableView_doubleClicked(const QModelIndex& index);
 
     void onSongChange(QString songName);
-    void onRowUpdate(int row, int pattern, int channels);
     void onPlaybackStarted();
     void onPlaybackPaused();
+    void updateStatusBar();
 
 private:
     Ui::MainWindow* ui;
@@ -66,6 +67,7 @@ private:
     Playlist* playlist;
     QThread playbackThread;
     Player* player;
+    QTimer* qtStatusUpdate;
 
     void loadPlaylistFromFile(const QString& playlistPath);
     void savePlaylistToFile(const QString& playlistPath);

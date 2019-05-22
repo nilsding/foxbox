@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QMutex>
+#include <QQueue>
+#include <QTime>
 
 #include <QAudioOutput>
 
@@ -15,15 +17,24 @@ class Player : public QObject
     Q_PROPERTY(bool playing MEMBER _playing READ playing)
 
 public:
+    struct TimeInfo
+    {
+        double seconds;
+        int pattern;
+        int row;
+        int channels;
+    };
+
     explicit Player(Playlist* playlist, QObject* parent = nullptr);
 
     bool playing() { return _playing; }
 
     static QMutex mutex;
 
+    TimeInfo currentTimeInfo() const { return _currentTimeInfo; }
+
 signals:
     void songChange(QString songName);
-    void rowUpdate(int row, int pattern, int channels);
     void playbackStarted();
     void playbackPaused();
 
@@ -44,10 +55,17 @@ private:
 
     QAudioOutput* _audioOutput = nullptr;
 
-    int _row = 0;
-    int _pattern = 0;
+    QTime _elapsedTime;
+    double _timeInfoPosition;
+    TimeInfo _currentTimeInfo;
+    QQueue<TimeInfo> _timeInfos;
 
     qreal _volume = 1.0;
+
+    void updateTimeInfos(Song* song, int count);
+    void resetTimeInfos(double position = 0.0);
+    TimeInfo lookupTimeInfo(double seconds);
+    void clearCurrentTimeInfo();
 };
 
 #endif // PLAYER_H

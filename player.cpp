@@ -40,6 +40,10 @@ void Player::play()
 
     auto song = _playlist->at(currentIndex);
     song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+    _elapsedTime.start();
+    clearCurrentTimeInfo();
+    resetTimeInfos();
+    updateTimeInfos(song, 0);
     emit(songChange(song->songName()));
 
     QAudioFormat sampleFormat;
@@ -83,6 +87,9 @@ void Player::play()
                 song->_mod->ctl_set("play.at_end", "stop");
                 song = _playlist->currentSong();
                 song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+                clearCurrentTimeInfo();
+                resetTimeInfos();
+                updateTimeInfos(song, 0);
                 emit(songChange(song->songName()));
             }
 
@@ -103,11 +110,16 @@ void Player::play()
 
             song->_mod->set_position_order_row(0, 0);
             song->_mod->ctl_set("play.at_end", "stop");
+            resetTimeInfos();
+            updateTimeInfos(song, 0);
             if (_playlist->rowCount() > _playlist->currentIndex() + 1)
             {
                 _playlist->setCurrentIndex(++currentIndex);
                 song = _playlist->currentSong();
                 song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+                clearCurrentTimeInfo();
+                resetTimeInfos();
+                updateTimeInfos(song, 0);
                 emit(songChange(song->songName()));
                 mutex.unlock();
                 continue;
@@ -116,21 +128,16 @@ void Player::play()
             mutex.unlock();
             break;
         }
-
-        auto row = song->_mod->get_current_row();
-        auto pattern = song->_mod->get_current_pattern();
-        if (_row != row || _pattern != pattern)
-        {
-            auto channels = song->_mod->get_current_playing_channels();
-            emit(rowUpdate(row, pattern, channels));
-            _row = row;
-            _pattern = pattern;
-        }
+        updateTimeInfos(song, FRAME_SIZE);
+        // lookupTimeInfo(song->_mod->get_position_seconds());
+        lookupTimeInfo(_elapsedTime.elapsed() / 1000.0);
 
         output->write(buf, static_cast<qint64>(read * sizeof(SAMPLE_CORE_TYPE) * 2));
         // wait until audio output needs more data
         while (_audioOutput->bytesFree() < _audioOutput->periodSize())
         {
+            //lookupTimeInfo(song->_mod->get_position_seconds());
+            lookupTimeInfo(_elapsedTime.elapsed() / 1000.0);
             // Do not eat up all CPU time while waiting
             QThread::msleep(15);
         };
@@ -228,5 +235,55 @@ void Player::onCurrentIndexChanged(int from, int /* to */)
     }
 
     auto song = _playlist->currentSong();
+    clearCurrentTimeInfo();
+    resetTimeInfos();
+    updateTimeInfos(song, 0);
     emit(songChange(song->songName()));
+}
+
+void Player::updateTimeInfos(Song *song, int count)
+{
+    _timeInfoPosition += count / 48000.0;
+
+    TimeInfo info;
+    info.seconds = _timeInfoPosition;
+    info.pattern = song->_mod->get_current_pattern();
+    info.row = song->_mod->get_current_row();
+    info.channels = song->_mod->get_current_playing_channels();
+
+    _timeInfos.enqueue(info);
+}
+
+void Player::resetTimeInfos(double position)
+{
+    _timeInfos.clear();
+    _timeInfoPosition = position;
+}
+
+Player::TimeInfo Player::lookupTimeInfo(double seconds)
+{
+    TimeInfo info = _currentTimeInfo;
+
+    if (_timeInfos.empty())
+    {
+        // try to recover the timeinfo
+        clearCurrentTimeInfo();
+        resetTimeInfos();
+        updateTimeInfos(_playlist->currentSong(), 0);
+        info = _currentTimeInfo;
+    }
+
+    while (_timeInfos.size() > 0 && _timeInfos.front().seconds <= seconds)
+    {
+        info = _timeInfos.dequeue();
+    }
+
+    _currentTimeInfo = info;
+    return _currentTimeInfo;
+}
+
+void Player::clearCurrentTimeInfo()
+{
+    _currentTimeInfo = TimeInfo();
+    _elapsedTime.restart();
 }
