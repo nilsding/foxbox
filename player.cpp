@@ -8,16 +8,9 @@
 #include <QIODevice>
 #include <QThread>
 
-QMutex Player::mutex;
-
-Player::Player(Playlist* playlist, QObject *parent) :
-    QObject(parent),
-    _playlist(playlist)
-{
-    connect(playlist, &Playlist::currentIndexChanged, this, &Player::onCurrentIndexChanged);
-}
-
-#define FRAME_SIZE 2
+// 16 seems to be a good enough value for updating the pattern/row/channels
+// count in time
+#define MAX_FRAME_SIZE 16
 #ifdef Q_OS_MAC
 // For some reason I am too lazy to debug now either libopenmpt or QtMultimedia
 // on macOS does not want to deal with float sample types ...
@@ -28,10 +21,191 @@ Player::Player(Playlist* playlist, QObject *parent) :
 #define SAMPLE_TYPE QAudioFormat::Float
 #endif
 
+QMutex Player::mutex;
+
+MptAudioDevice::MptAudioDevice(Playlist* playlist) :
+    _playlist(playlist)
+{
+    connect(playlist, &Playlist::currentIndexChanged, this, &MptAudioDevice::onCurrentIndexChanged);
+}
+
+qint64 MptAudioDevice::readData(char* data, qint64 maxSize)
+{
+    auto multiplier = sizeof(SAMPLE_CORE_TYPE) * 2;
+    std::size_t framesToRender = maxSize / multiplier;
+    if (framesToRender == 0)
+    {
+        return 0;
+    }
+
+    //if (framesToRender > MAX_FRAME_SIZE)
+    //{
+    //    framesToRender = MAX_FRAME_SIZE;
+    //}
+
+    if (_song == nullptr)
+    {
+        _song = _playlist->currentSong();
+        _song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+        // fresh song started -- we'll start a new timeinfo clock
+        _elapsedTime.start();
+        clearCurrentTimeInfo();
+        resetTimeInfos();
+        updateTimeInfos(_song, 0);
+    }
+
+    if (_currentIndex != _playlist->currentIndex())
+    {
+        // only change the actual song if the change was caused by moving
+        // the song around in the playlist
+        if (_song != _playlist->currentSong())
+        {
+            std::cerr << "song != playlist->currentSong" << std::endl;
+            _song->_mod->set_position_order_row(0, 0);
+            _song->_mod->ctl_set("play.at_end", "stop");
+            _song = _playlist->currentSong();
+            _song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+            clearCurrentTimeInfo();
+            resetTimeInfos();
+            updateTimeInfos(_song, 0);
+            emit(songChange(_song->songName()));
+        }
+
+        _currentIndex = _playlist->currentIndex();
+    }
+
+    std::size_t frameSize = 0;
+    qint64 framesRendered = 0;
+    while (framesToRender > 0)
+    {
+        frameSize = std::min<std::size_t>(framesToRender, 480); // 480 = 48000/100 -> 100Hz timeinfo update
+        frameSize = _song->_mod->read_interleaved_stereo(48000, frameSize, reinterpret_cast<SAMPLE_CORE_TYPE*>(data));
+
+        updateTimeInfos(_song, frameSize);
+
+        data += frameSize * multiplier;
+        framesRendered += frameSize;
+        framesToRender -= frameSize;
+
+        if (frameSize == 0)
+        {
+            // when module ctl `play.at_end` is set to continue, at the end of the
+            // song 0 is returned.  however subsequent reads will start playing at
+            // the module's loop point again.  therefore: return 0 bytes read, and
+            // read again
+            if (_loop)
+            {
+                return 0;
+            }
+
+            _song->_mod->set_position_order_row(0, 0);
+            _song->_mod->ctl_set("play.at_end", "stop");
+            resetTimeInfos();
+            updateTimeInfos(_song, 0);
+
+            // we have a next song available?  perfect, we'll just return 0 bytes
+            // read and prepare the next song for the next call to readData
+            if (_playlist->rowCount() > _playlist->currentIndex() + 1)
+            {
+                _playlist->setCurrentIndex(++_currentIndex);
+                _song = _playlist->currentSong();
+                _song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
+                clearCurrentTimeInfo();
+                resetTimeInfos();
+                updateTimeInfos(_song, 0);
+                emit(songChange(_song->songName()));
+                return 0;
+            }
+
+            // end of playlist?  ERROR IT OUT BISH
+            return -1;
+        }
+
+    }
+
+    return framesRendered * multiplier;
+}
+
+qint64 MptAudioDevice::writeData(const char* data, qint64 maxSize)
+{
+    return -1;
+}
+
+void MptAudioDevice::onCurrentIndexChanged(int from, int /* to */)
+{
+    // XXX: how the fuck do we know if we are playing?  why would that even
+    // matter?
+    //if (!_playing)
+    //{
+        auto song = _playlist->at(from);
+        song->_mod->set_position_order_row(0, 0);
+        song->_mod->ctl_set("play.at_end", "stop");
+    //}
+
+    _song = _playlist->currentSong();
+    clearCurrentTimeInfo();
+    resetTimeInfos();
+    updateTimeInfos(_song, 0);
+    emit(songChange(_song->songName()));
+}
+
+void MptAudioDevice::updateTimeInfos(Song *song, int count)
+{
+    _timeInfoPosition += count / 48000.0;
+
+    TimeInfo info;
+    info.seconds = _timeInfoPosition;
+    info.pattern = song->_mod->get_current_pattern();
+    info.row = song->_mod->get_current_row();
+    info.channels = song->_mod->get_current_playing_channels();
+
+    _timeInfos.enqueue(info);
+}
+
+void MptAudioDevice::resetTimeInfos(double position)
+{
+    _timeInfos.clear();
+    _timeInfoPosition = position;
+}
+
+TimeInfo MptAudioDevice::lookupTimeInfo(double seconds)
+{
+    TimeInfo info = _currentTimeInfo;
+
+    if (_timeInfos.empty())
+    {
+        // try to recover the timeinfo
+        clearCurrentTimeInfo();
+        resetTimeInfos();
+        updateTimeInfos(_playlist->currentSong(), 0);
+        info = _currentTimeInfo;
+    }
+
+    while (_timeInfos.size() > 0 && _timeInfos.front().seconds <= seconds)
+    {
+        info = _timeInfos.dequeue();
+    }
+
+    _currentTimeInfo = info;
+    return _currentTimeInfo;
+}
+
+void MptAudioDevice::clearCurrentTimeInfo()
+{
+    _currentTimeInfo = TimeInfo();
+    _elapsedTime.restart();
+}
+
+// ============================================================================
+
+Player::Player(Playlist* playlist, QObject *parent) :
+    QObject(parent),
+    _playlist(playlist)
+{}
+
 void Player::play()
 {
     auto currentIndex = _playlist->currentIndex();
-    QByteArray buf(FRAME_SIZE * sizeof(SAMPLE_CORE_TYPE) * 2, 0x00); // frame size * byte size * 2 (channels)
 
     if (_playlist->rowCount() == 0)
     {
@@ -39,11 +213,6 @@ void Player::play()
     }
 
     auto song = _playlist->at(currentIndex);
-    song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
-    _elapsedTime.start();
-    clearCurrentTimeInfo();
-    resetTimeInfos();
-    updateTimeInfos(song, 0);
     emit(songChange(song->songName()));
 
     QAudioFormat sampleFormat;
@@ -69,91 +238,36 @@ void Player::play()
     _audioOutput->setCategory("music");
     _audioOutput->setVolume(_volume);
 
-    QIODevice *output = _audioOutput->start();
+    if (_mptDevice == nullptr)
+    {
+        _mptDevice = new MptAudioDevice(_playlist);
+        _mptDevice->open(QIODevice::ReadOnly);
+        connect(_mptDevice, &MptAudioDevice::songChange, [&](QString songName) {
+            emit(songChange(songName));
+        });
+    }
+    _audioOutput->start(_mptDevice);
 
     _playing = true;
     emit(playbackStarted());
+    return;
     while (_playing)
     {
         QApplication::processEvents();
         mutex.lock();
-        if (currentIndex != _playlist->currentIndex())
-        {
-            // only change the actual song if the change was caused by moving
-            // the song around in the playlist
-            if (song != _playlist->currentSong())
-            {
-                song->_mod->set_position_order_row(0, 0);
-                song->_mod->ctl_set("play.at_end", "stop");
-                song = _playlist->currentSong();
-                song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
-                clearCurrentTimeInfo();
-                resetTimeInfos();
-                updateTimeInfos(song, 0);
-                emit(songChange(song->songName()));
-            }
-
-            currentIndex = _playlist->currentIndex();
-        }
-
-        auto read = song->_mod->read_interleaved_stereo(48000, FRAME_SIZE, reinterpret_cast<SAMPLE_CORE_TYPE*>(buf.data()));
-        if (read == 0)
-        {
-            // when module ctl `play.at_end` is set to continue, at the end of the
-            // song 0 is returned.  however subsequent reads will start playing at
-            // the module's loop point again.  therefore: redo this iteration.
-            if (_loop)
-            {
-                mutex.unlock();
-                continue;
-            }
-
-            song->_mod->set_position_order_row(0, 0);
-            song->_mod->ctl_set("play.at_end", "stop");
-            resetTimeInfos();
-            updateTimeInfos(song, 0);
-            if (_playlist->rowCount() > _playlist->currentIndex() + 1)
-            {
-                _playlist->setCurrentIndex(++currentIndex);
-                song = _playlist->currentSong();
-                song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
-                clearCurrentTimeInfo();
-                resetTimeInfos();
-                updateTimeInfos(song, 0);
-                emit(songChange(song->songName()));
-                mutex.unlock();
-                continue;
-            }
-            _playing = false;
-            mutex.unlock();
-            break;
-        }
-        updateTimeInfos(song, FRAME_SIZE);
-        // lookupTimeInfo(song->_mod->get_position_seconds());
-        lookupTimeInfo(_elapsedTime.elapsed() / 1000.0);
-
-        output->write(buf, static_cast<qint64>(read * sizeof(SAMPLE_CORE_TYPE) * 2));
-        // wait until audio output needs more data
-        while (_audioOutput->bytesFree() < _audioOutput->periodSize())
-        {
-            //lookupTimeInfo(song->_mod->get_position_seconds());
-            lookupTimeInfo(_elapsedTime.elapsed() / 1000.0);
-            // Do not eat up all CPU time while waiting
-            QThread::msleep(15);
-        };
-        mutex.unlock();
     }
     song->_mod->ctl_set("play.at_end", "stop");
     emit(playbackPaused());
 
-    _audioOutput->stop();
-    _audioOutput->deleteLater();
-    _audioOutput = nullptr;
 }
 
 void Player::pause()
 {
+    _audioOutput->stop();
+    _audioOutput->deleteLater();
+    _audioOutput = nullptr;
     _playing = false;
+    // do NOT delete _mptDevice -- it still has the state and such... maybe?
 }
 
 void Player::nextTrack()
@@ -217,73 +331,12 @@ void Player::setVolume(int volume)
 
 void Player::setLoop(bool loop)
 {
-    _loop = loop;
-    if (_playing)
+    if (_mptDevice == nullptr)
     {
-        auto song = _playlist->currentSong();
-        song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
-    }
-}
-
-void Player::onCurrentIndexChanged(int from, int /* to */)
-{
-    if (!_playing)
-    {
-        auto song = _playlist->at(from);
-        song->_mod->set_position_order_row(0, 0);
-        song->_mod->ctl_set("play.at_end", "stop");
+        return;
     }
 
     auto song = _playlist->currentSong();
-    clearCurrentTimeInfo();
-    resetTimeInfos();
-    updateTimeInfos(song, 0);
-    emit(songChange(song->songName()));
-}
-
-void Player::updateTimeInfos(Song *song, int count)
-{
-    _timeInfoPosition += count / 48000.0;
-
-    TimeInfo info;
-    info.seconds = _timeInfoPosition;
-    info.pattern = song->_mod->get_current_pattern();
-    info.row = song->_mod->get_current_row();
-    info.channels = song->_mod->get_current_playing_channels();
-
-    _timeInfos.enqueue(info);
-}
-
-void Player::resetTimeInfos(double position)
-{
-    _timeInfos.clear();
-    _timeInfoPosition = position;
-}
-
-Player::TimeInfo Player::lookupTimeInfo(double seconds)
-{
-    TimeInfo info = _currentTimeInfo;
-
-    if (_timeInfos.empty())
-    {
-        // try to recover the timeinfo
-        clearCurrentTimeInfo();
-        resetTimeInfos();
-        updateTimeInfos(_playlist->currentSong(), 0);
-        info = _currentTimeInfo;
-    }
-
-    while (_timeInfos.size() > 0 && _timeInfos.front().seconds <= seconds)
-    {
-        info = _timeInfos.dequeue();
-    }
-
-    _currentTimeInfo = info;
-    return _currentTimeInfo;
-}
-
-void Player::clearCurrentTimeInfo()
-{
-    _currentTimeInfo = TimeInfo();
-    _elapsedTime.restart();
+    song->_mod->ctl_set("play.at_end", loop ? "continue" : "stop");
+    _mptDevice->_loop = loop;
 }
