@@ -166,13 +166,18 @@ void MptAudioDevice::updateTimeInfos(Song *song, int count)
     info.channels = song->_mod->get_current_playing_channels();
 
     _mutex.tryLock();
-    _timeInfos.enqueue(info);
+    _timeInfos.push(info);
     _mutex.unlock();
 }
 
 void MptAudioDevice::resetTimeInfos(double position)
 {
-    _timeInfos.clear();
+    _mutex.tryLock();
+    while (!_timeInfos.empty())
+    {
+        _timeInfos.pop();
+    }
+    _mutex.unlock();
     _timeInfoPosition = position;
 }
 
@@ -185,8 +190,8 @@ TimeInfo MptAudioDevice::lookupTimeInfo(double seconds)
     {
         // try to recover the timeinfo
         clearCurrentTimeInfo();
-        resetTimeInfos();
         _mutex.unlock();
+        resetTimeInfos();
         updateTimeInfos(_playlist->currentSong(), 0);
         _mutex.tryLock();
         info = _currentTimeInfo;
@@ -194,7 +199,8 @@ TimeInfo MptAudioDevice::lookupTimeInfo(double seconds)
 
     while (_timeInfos.size() > 0 && _timeInfos.front().seconds <= seconds)
     {
-        info = _timeInfos.dequeue();
+        info = _timeInfos.front();
+        _timeInfos.pop();
     }
     _mutex.unlock();
 

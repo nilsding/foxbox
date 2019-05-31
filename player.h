@@ -3,8 +3,9 @@
 
 #include <QObject>
 #include <QMutex>
-#include <QQueue>
 #include <QTime>
+
+#include <queue>
 
 #include <QAudioOutput>
 #include <QIODevice>
@@ -54,7 +55,7 @@ private:
     QTime _elapsedTime;
     double _timeInfoPosition;
     TimeInfo _currentTimeInfo;
-    QQueue<TimeInfo> _timeInfos;
+    std::queue<TimeInfo> _timeInfos;
 
     QMutex _mutex;
 
