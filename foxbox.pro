@@ -66,8 +66,8 @@ LIBS += \
 RESOURCES += \
     res.qrc
 
-win32:VERSION = 0.1.0.0
-else:VERSION = 0.1.0
+win32:VERSION = 0.1.99.0
+else:VERSION = 0.1.99
 
 mac {
     OBJECTIVE_SOURCES += \

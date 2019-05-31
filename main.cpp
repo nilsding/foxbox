@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     a.setApplicationName("foxbox");
-    a.setApplicationVersion("0.1.0");
+    a.setApplicationVersion("0.1.99");
     a.setOrganizationName("nilsding");
     a.setOrganizationDomain("org.nilsding");
 
