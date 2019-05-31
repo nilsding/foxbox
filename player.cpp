@@ -9,8 +9,8 @@
 #include <QThread>
 
 #ifdef Q_OS_MAC
-// For some reason I am too lazy to debug now either libopenmpt or QtMultimedia
-// on macOS does not want to deal with float sample types ...
+// For some reason QtMultimedia on macOS does not want to deal with float sample
+// types...
 #define SAMPLE_CORE_TYPE int16_t
 #define SAMPLE_TYPE QAudioFormat::SignedInt
 #else
