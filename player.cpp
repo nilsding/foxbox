@@ -345,8 +345,8 @@ void Player::setVolume(int volume)
     }
 
     _volume = QAudio::convertVolume(volume / qreal(100.0),
-                                    QAudio::LinearVolumeScale,
-                                    QAudio::LogarithmicVolumeScale);
+                                    QAudio::LogarithmicVolumeScale,
+                                    QAudio::LinearVolumeScale);
     _audioOutput->setVolume(_volume);
 }
 
