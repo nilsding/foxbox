@@ -180,16 +180,18 @@ TimeInfo MptAudioDevice::lookupTimeInfo(double seconds)
 {
     TimeInfo info = _currentTimeInfo;
 
+    _mutex.tryLock();
     if (_timeInfos.empty())
     {
         // try to recover the timeinfo
         clearCurrentTimeInfo();
         resetTimeInfos();
+        _mutex.unlock();
         updateTimeInfos(_playlist->currentSong(), 0);
+        _mutex.tryLock();
         info = _currentTimeInfo;
     }
 
-    _mutex.tryLock();
     while (_timeInfos.size() > 0 && _timeInfos.front().seconds <= seconds)
     {
         info = _timeInfos.dequeue();
