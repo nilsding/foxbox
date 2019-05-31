@@ -13,7 +13,11 @@
 
 struct TimeInfo
 {
+    bool valid = false;
+
     double seconds;
+    int order;
+    int orderCount;
     int pattern;
     int row;
     int channels;
@@ -29,6 +33,10 @@ public:
 
     qint64 readData(char* data, qint64 maxSize);
     qint64 writeData(const char* data, qint64 maxSize);
+
+    TimeInfo currentTimeInfo();
+
+    void fixSongPosition();
 
 signals:
     void songChange(QString songName);
@@ -47,6 +55,8 @@ private:
     double _timeInfoPosition;
     TimeInfo _currentTimeInfo;
     QQueue<TimeInfo> _timeInfos;
+
+    QMutex _mutex;
 
     void updateTimeInfos(Song* song, int count);
     void resetTimeInfos(double position = 0.0);
@@ -68,11 +78,7 @@ public:
 
     static QMutex mutex;
 
-    TimeInfo currentTimeInfo() const
-    {
-        _mptDevice->lookupTimeInfo(_mptDevice->_elapsedTime.elapsed() / 1000.0);
-        return _mptDevice->_currentTimeInfo;
-    }
+    TimeInfo currentTimeInfo() const;
 
 signals:
     void songChange(QString songName);

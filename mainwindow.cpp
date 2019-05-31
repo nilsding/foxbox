@@ -298,10 +298,19 @@ void MainWindow::onPlaybackPaused()
 void MainWindow::updateStatusBar()
 {
     auto info = player->currentTimeInfo();
-    slInfo->setSecondLine(QString("Playing, Pattern %1, Row %2, %3 channels")
-                          .arg(QString::number(info.pattern),
-                               QString::number(info.row),
-                               QString::number(info.channels)));
+
+    if (!info.valid)
+    {
+        return;
+    }
+
+    slInfo->setSecondLine(
+        QString("Playing, Order %1/%2, Pattern %3, Row %4, %5 channels")
+        .arg(QString::number(info.order),
+             QString::number(info.orderCount),
+             QString::number(info.pattern),
+             QString::number(info.row),
+             QString::number(info.channels)));
 }
 
 void MainWindow::loadPlaylistFromFile(const QString& playlistPath)

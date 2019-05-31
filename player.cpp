@@ -8,9 +8,6 @@
 #include <QIODevice>
 #include <QThread>
 
-// 16 seems to be a good enough value for updating the pattern/row/channels
-// count in time
-#define MAX_FRAME_SIZE 16
 #ifdef Q_OS_MAC
 // For some reason I am too lazy to debug now either libopenmpt or QtMultimedia
 // on macOS does not want to deal with float sample types ...
@@ -37,11 +34,6 @@ qint64 MptAudioDevice::readData(char* data, qint64 maxSize)
     {
         return 0;
     }
-
-    //if (framesToRender > MAX_FRAME_SIZE)
-    //{
-    //    framesToRender = MAX_FRAME_SIZE;
-    //}
 
     if (_song == nullptr)
     {
@@ -100,8 +92,8 @@ qint64 MptAudioDevice::readData(char* data, qint64 maxSize)
 
             _song->_mod->set_position_order_row(0, 0);
             _song->_mod->ctl_set("play.at_end", "stop");
-            resetTimeInfos();
-            updateTimeInfos(_song, 0);
+            // resetTimeInfos();
+            // updateTimeInfos(_song, 0);
 
             // we have a next song available?  perfect, we'll just return 0 bytes
             // read and prepare the next song for the next call to readData
@@ -111,13 +103,13 @@ qint64 MptAudioDevice::readData(char* data, qint64 maxSize)
                 _song = _playlist->currentSong();
                 _song->_mod->ctl_set("play.at_end", _loop ? "continue" : "stop");
                 clearCurrentTimeInfo();
-                resetTimeInfos();
-                updateTimeInfos(_song, 0);
+                // resetTimeInfos();
+                // updateTimeInfos(_song, 0);
                 emit(songChange(_song->songName()));
                 return 0;
             }
 
-            // end of playlist?  ERROR IT OUT BISH
+            // end of playlist?
             return -1;
         }
 
@@ -129,6 +121,17 @@ qint64 MptAudioDevice::readData(char* data, qint64 maxSize)
 qint64 MptAudioDevice::writeData(const char* data, qint64 maxSize)
 {
     return -1;
+}
+
+TimeInfo MptAudioDevice::currentTimeInfo()
+{
+    return lookupTimeInfo(_elapsedTime.elapsed() / 1000.0);
+}
+
+void MptAudioDevice::fixSongPosition()
+{
+    auto timeInfo = currentTimeInfo();
+    _song->_mod->set_position_order_row(timeInfo.order, timeInfo.row);
 }
 
 void MptAudioDevice::onCurrentIndexChanged(int from, int /* to */)
@@ -154,12 +157,17 @@ void MptAudioDevice::updateTimeInfos(Song *song, int count)
     _timeInfoPosition += count / 48000.0;
 
     TimeInfo info;
+    info.valid = true;
     info.seconds = _timeInfoPosition;
+    info.order = song->_mod->get_current_order();
+    info.orderCount = song->_mod->get_num_orders() - 1;
     info.pattern = song->_mod->get_current_pattern();
     info.row = song->_mod->get_current_row();
     info.channels = song->_mod->get_current_playing_channels();
 
+    _mutex.tryLock();
     _timeInfos.enqueue(info);
+    _mutex.unlock();
 }
 
 void MptAudioDevice::resetTimeInfos(double position)
@@ -181,10 +189,12 @@ TimeInfo MptAudioDevice::lookupTimeInfo(double seconds)
         info = _currentTimeInfo;
     }
 
+    _mutex.tryLock();
     while (_timeInfos.size() > 0 && _timeInfos.front().seconds <= seconds)
     {
         info = _timeInfos.dequeue();
     }
+    _mutex.unlock();
 
     _currentTimeInfo = info;
     return _currentTimeInfo;
@@ -202,6 +212,15 @@ Player::Player(Playlist* playlist, QObject *parent) :
     QObject(parent),
     _playlist(playlist)
 {}
+
+TimeInfo Player::currentTimeInfo() const
+{
+    if (_mptDevice == nullptr)
+    {
+        return TimeInfo();
+    }
+    return _mptDevice->currentTimeInfo();
+}
 
 void Player::play()
 {
@@ -251,14 +270,6 @@ void Player::play()
     _playing = true;
     emit(playbackStarted());
     return;
-    while (_playing)
-    {
-        QApplication::processEvents();
-        mutex.lock();
-    }
-    song->_mod->ctl_set("play.at_end", "stop");
-    emit(playbackPaused());
-
 }
 
 void Player::pause()
@@ -267,7 +278,9 @@ void Player::pause()
     _audioOutput->deleteLater();
     _audioOutput = nullptr;
     _playing = false;
-    // do NOT delete _mptDevice -- it still has the state and such... maybe?
+    _mptDevice->fixSongPosition();
+    _mptDevice->deleteLater();
+    _mptDevice = nullptr;
 }
 
 void Player::nextTrack()
