@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Font size rendering when running inside X11
 - Minimum height of the main window is now computed instead of hardcoded -> this
   resolves some alignment issues across different platforms
+- The playback controls tool bar can no longer be accidentally removed
 
 ## [0.1.0] - 2019-04-14
 ### Added
