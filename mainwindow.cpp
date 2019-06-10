@@ -79,7 +79,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent* event)
 {
-    emit(pause());
+    emit(pause(false));
     event->accept();
 
     playbackThread.wait(500);
@@ -140,7 +140,7 @@ void MainWindow::onPlayPressed()
 {
     if (player->playing())
     {
-        emit(pause());
+        emit(pause(true));
         return;
     }
 
@@ -325,7 +325,7 @@ void MainWindow::loadPlaylistFromFile(const QString& playlistPath)
         bool wasPlaying = player->playing();
         if (wasPlaying)
         {
-            player->pause();
+            player->pause(false);
             onPlaybackPaused();
         }
 

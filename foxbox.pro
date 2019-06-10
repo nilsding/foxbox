@@ -31,6 +31,7 @@ SOURCES += \
     playlist.cpp \
     song.cpp \
     player.cpp \
+    mptaudiodevice.cpp \
     m3uparser.cpp \
     m3uwriter.cpp \
     aboutdialog.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     playlist.h \
     song.h \
     player.h \
+    mptaudiodevice.h \
     m3uparser.h \
     m3uwriter.h \
     aboutdialog.h \

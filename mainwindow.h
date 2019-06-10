@@ -37,7 +37,7 @@ protected:
 
 signals:
     void play();
-    void pause();
+    void pause(bool shouldFixSongPosition);
     void nextTrack();
     void previousTrack();
 
