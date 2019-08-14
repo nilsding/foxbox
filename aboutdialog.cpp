@@ -66,8 +66,11 @@ void AboutDialog::paintEvent(QPaintEvent* /* event */)
     QFont font("PxPlus IBM CGA", 16);
     font.setPixelSize(16);
     font.setStyle(QFont::StyleNormal);
-    font.setStyleStrategy(QFont::NoAntialias);
     font.setHintingPreference(QFont::PreferNoHinting);
+    if (devicePixelRatio() - 1.0 <= 0.001)
+    {
+        font.setStyleStrategy(QFont::NoAntialias);
+    }
     painter.setFont(font);
 
     for (int i = 0; i < aboutText.size(); i++)
@@ -95,8 +98,11 @@ void AboutDialog::buildTextWidthTable()
     QFont font("PxPlus IBM CGA", 16);
     font.setPixelSize(16);
     font.setStyle(QFont::StyleNormal);
-    font.setStyleStrategy(QFont::NoAntialias);
     font.setHintingPreference(QFont::PreferNoHinting);
+    if (devicePixelRatio() - 1.0 <= 0.001)
+    {
+        font.setStyleStrategy(QFont::NoAntialias);
+    }
     QFontMetricsF fontMetrics(font);
 
     _textWidthTable->clear();

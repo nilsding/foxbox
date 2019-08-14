@@ -4,9 +4,12 @@ StatusLabel::StatusLabel()
 {
     QFont font("PxPlus IBM CGA", 8);
     font.setPixelSize(8);
-    font.setStyleStrategy(QFont::NoAntialias);
-    font.setHintingPreference(QFont::PreferNoHinting);
     font.setStyleHint(QFont::Monospace);
+    font.setHintingPreference(QFont::PreferNoHinting);
+    if (devicePixelRatioF() - 1.0 <= 0.001)
+    {
+        font.setStyleStrategy(QFont::NoAntialias);
+    }
     setFont(font);
 
     setStyleSheet(

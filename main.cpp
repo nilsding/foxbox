@@ -37,8 +37,11 @@ int main(int argc, char *argv[])
     QFont font("PxPlus IBM CGA", 8);
     font.setPixelSize(8);
     font.setStyle(QFont::StyleNormal);
-    font.setStyleStrategy(QFont::NoAntialias);
     font.setHintingPreference(QFont::PreferNoHinting);
+    if (a.devicePixelRatio() - 1.0 <= 0.001)
+    {
+        font.setStyleStrategy(QFont::NoAntialias);
+    }
     a.setFont(font);
 
 #ifdef HAVE_NATIVE_FILTERS
